@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Network Analyzer Native Host - Windows MSI 安装包定义
+  使用 WiX Toolset v3 构建
+  构建命令: candle.exe product.wxs && light.exe -ext WixUtilExtension product.wixobj -o Network-Analyzer-Host.msi
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*"
+           Name="Network Analyzer 诊断组件"
+           Language="2052"
+           Version="1.0.0.0"
+           Manufacturer="Network Analyzer"
+           UpgradeCode="A1B2C3D4-E5F6-7890-ABCD-EF1234567890">
+
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser"
+             Description="Network Analyzer 本地网络诊断组件"
+             Comments="安装本地 Ping/MTR 诊断程序并注册到 Chrome 和 Edge 浏览器" />
+
+    <MajorUpgrade DowngradeErrorMessage="已安装更新版本。" />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- 安装目录 -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="INSTALLFOLDER" Name="Network-Analyzer">
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <!-- 文件组件 -->
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- 可执行文件 -->
+      <Component Id="MainExecutable" Guid="B2C3D4E5-F6A7-8901-BCDE-F12345678901">
+        <File Id="NetworkAnalyzer" Source="..\..\dist\windows-amd64\network_analyzer.exe" KeyPath="yes" />
+      </Component>
+
+      <!-- Chrome Native Messaging Host manifest -->
+      <Component Id="ChromeManifest" Guid="C3D4E5F6-A7B8-9012-CDEF-123456789012">
+        <File Id="ChromeManifestFile" Source="chrome_manifest.json" Name="com.network.analyzer.json" KeyPath="yes" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Google\Chrome\NativeMessagingHosts\com.network.analyzer"
+                       Type="string"
+                       Value="[INSTALLFOLDER]com.network.analyzer.json" />
+      </Component>
+
+      <!-- Edge Native Messaging Host manifest -->
+      <Component Id="EdgeManifest" Guid="D4E5F6A7-B8C9-0123-DEFA-234567890123">
+        <File Id="EdgeManifestFile" Source="edge_manifest.json" Name="com.network.analyzer.edge.json" KeyPath="yes" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Microsoft\Edge\NativeMessagingHosts\com.network.analyzer"
+                       Type="string"
+                       Value="[INSTALLFOLDER]com.network.analyzer.edge.json" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- 功能定义 -->
+    <Feature Id="ProductFeature" Title="Network Analyzer 诊断组件" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+    <!-- 卸载时自动清理注册表（WiX 自动处理） -->
+
+  </Product>
+</Wix>

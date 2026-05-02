@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "Network Analyzer",
+  "version": "1.0.0",
+  "description": "监听页面网络请求，分析域名/IP延迟、丢包及路由追踪",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw35CZob+l7oD6+K80naUi5OQfg3U+QcUwuDvkzpK5+xw6gpEzKZscuhvQq1J8iK2zZFIrGhwdX16OOGDv7Am7WIegKRr0h8vF7LGpi42GNawMNJpmCDvQj5uFVtd+TRqAoyw8NO8P1zu1wfuSul2T+wlaHPAEGuj67WWzVAoK+dVXuq2qulcZTrM3XFiC2QeCpIMybQ27FDuKIHkMQJhq1y73iNCPWuAzCLWHZQ98qqSPFIfbNZ/P/XMAeVWRwiZzbE7YeJOnabTEaS1UwtbDD/kVIQRt5UcV6b2xWqDqLyZ/P+ZFt18PIWRvqxxHfdIjZwCTezS0EWZDTbo/6mO+wIDAQAB",
+  "permissions": [
+    "activeTab",
+    "webRequest",
+    "tabs",
+    "storage",
+    "webNavigation",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "https://api.globalping.io/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["packages/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

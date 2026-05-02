@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Network Analyzer - 安装诊断组件</title>
+  <style>
+    :root{--primary:#1a2b4a;--green:#4CAF50;--red:#f44336;--orange:#FF9800;--bg:#f5f7fa;--surface:#fff;--border:#e2e8f0;--text:#2d3748;--text2:#718096}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+    .wrap{max-width:700px;margin:40px auto;padding:0 20px}
+    h1{font-size:22px;color:var(--primary);text-align:center;margin-bottom:6px}
+    .sub{text-align:center;color:var(--text2);font-size:14px;margin-bottom:28px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+    .status-box{text-align:center}
+    .status-icon{font-size:44px;margin-bottom:8px}
+    .status-ok{color:var(--green);font-weight:700;font-size:16px}
+    .status-err{color:var(--red);font-weight:700;font-size:16px}
+    .status-wait{color:var(--orange);font-weight:700;font-size:16px}
+    .status-hint{color:var(--text2);font-size:13px;margin-top:4px}
+    .btn{display:inline-block;padding:8px 20px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;text-decoration:none}
+    .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{opacity:.9}
+    .btn-green{background:var(--green);color:#fff}.btn-green:hover{opacity:.9}
+    .btn-center{text-align:center;margin-top:14px}
+    .tabs{display:flex;gap:0;margin-bottom:0}
+    .tab{flex:1;padding:10px;text-align:center;background:var(--border);border:1px solid var(--border);cursor:pointer;font-size:14px;font-weight:500;color:var(--text2)}
+    .tab:first-child{border-radius:12px 0 0 0}.tab:last-child{border-radius:0 12px 0 0}
+    .tab.active{background:var(--surface);color:var(--primary);border-bottom-color:var(--surface);font-weight:600}
+    .panel-wrap{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:20px;margin-bottom:20px}
+    .panel{display:none}.panel.active{display:block}
+    .step{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start}
+    .sn{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+    .sb{flex:1}.st{font-weight:600;font-size:14px;margin-bottom:2px}.sd{font-size:13px;color:var(--text2)}
+    .note{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 14px;font-size:13px;color:#6d4c00;margin-top:14px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔧 安装本地诊断组件</h1>
+  <p class="sub">Ping 和 MTR 功能需要安装本地诊断程序，用于执行真实的 ICMP 网络探测</p>
+
+  <div class="card status-box">
+    <div class="status-icon" id="statusIcon">🔍</div>
+    <div id="statusText" class="status-wait">正在检测...</div>
+    <div class="status-hint" id="statusHint">正在检查本地诊断组件是否已安装</div>
+    <div class="btn-center">
+      <button class="btn btn-primary" id="checkBtn">🔄 重新检测</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">🍎 macOS</div>
+    <div class="tab">🪟 Windows</div>
+  </div>
+  <div class="panel-wrap">
+    <div class="panel active" id="panel-mac">
+      <div class="step">
+        <span class="sn">1</span>
+        <div class="sb">
+          <div class="st">下载安装包</div>
+          <div class="sd">下载 macOS 版本的 .pkg 安装包</div>
+          <div class="btn-center" style="text-align:left">
+            <button class="btn btn-green" id="dlMac">📥 下载 macOS 安装包 (.pkg)</button>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="sn">2</span>
+        <div class="sb">
+          <div class="st">双击安装</div>
+          <div class="sd">双击下载的 .pkg 文件，按照安装向导提示完成安装。安装过程会自动注册到 Chrome 和 Edge。</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="sn">3</span>
+        <div class="sb">
+          <div class="st">重启浏览器</div>
+          <div class="sd">完全关闭并重新打开浏览器，然后点击上方的"重新检测"按钮验证。</div>
+        </div>
+      </div>
+      <div class="note">
+        💡 <strong>提示：</strong>macOS 可能提示"无法验证开发者"，请在 系统设置 → 隐私与安全性 中点击"仍要打开"。<br>
+        🗑️ <strong>卸载：</strong>打开终端运行 <code>sudo /usr/local/lib/network-analyzer/uninstall.sh</code>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-win">
+      <div class="step">
+        <span class="sn">1</span>
+        <div class="sb">
+          <div class="st">下载安装包</div>
+          <div class="sd">下载 Windows 版本的安装包</div>
+          <div class="btn-center" style="text-align:left">
+            <button class="btn btn-green" id="dlWin">📥 下载 Windows 安装包</button>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="sn">2</span>
+        <div class="sb">
+          <div class="st">解压并双击安装</div>
+          <div class="sd">解压 zip 文件，双击 <code>install.bat</code> 即可完成安装。无需管理员权限，自动注册到 Chrome 和 Edge。</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="sn">3</span>
+        <div class="sb">
+          <div class="st">重启浏览器</div>
+          <div class="sd">完全关闭并重新打开浏览器，然后点击上方的"重新检测"按钮验证。</div>
+        </div>
+      </div>
+      <div class="note">
+        💡 <strong>提示：</strong>Windows 可能弹出 SmartScreen 警告，点击"更多信息"→"仍要运行"。<br>
+        🗑️ <strong>卸载：</strong>运行安装目录下的 <code>uninstall.bat</code>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="setup.js"></script>
+</body>
+</html>

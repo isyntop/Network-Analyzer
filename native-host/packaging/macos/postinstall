@@ -1,0 +1,52 @@
+#!/bin/bash
+# macOS .pkg postinstall 脚本
+# 安装完成后自动注册 Native Messaging Host 到 Chrome 和 Edge
+
+set -e
+
+HOST_NAME="com.network.analyzer"
+INSTALL_DIR="/usr/local/lib/network-analyzer"
+BINARY_PATH="$INSTALL_DIR/network_analyzer"
+
+# 确保可执行权限
+chmod +x "$BINARY_PATH"
+
+# 获取当前登录用户（pkg 以 root 运行，需要获取实际用户）
+CURRENT_USER="${USER}"
+if [ "$CURRENT_USER" = "root" ]; then
+  CURRENT_USER=$(stat -f "%Su" /dev/console 2>/dev/null || echo "")
+fi
+if [ -z "$CURRENT_USER" ]; then
+  CURRENT_USER=$(ls -l /dev/console | awk '{print $3}')
+fi
+
+USER_HOME=$(eval echo "~$CURRENT_USER")
+
+# Native Messaging Host manifest 内容（允许所有扩展）
+generate_manifest() {
+  cat << MANIFEST
+{
+  "name": "$HOST_NAME",
+  "description": "Network Analyzer - 本地网络诊断工具",
+  "path": "$BINARY_PATH",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://kpfbbomehbepffmhnbjmooahcfedpndg/"
+  ]
+}
+MANIFEST
+}
+
+# 注册到 Chrome
+CHROME_DIR="$USER_HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"
+mkdir -p "$CHROME_DIR"
+generate_manifest > "$CHROME_DIR/$HOST_NAME.json"
+chown "$CURRENT_USER" "$CHROME_DIR/$HOST_NAME.json"
+
+# 注册到 Edge
+EDGE_DIR="$USER_HOME/Library/Application Support/Microsoft Edge/NativeMessagingHosts"
+mkdir -p "$EDGE_DIR"
+generate_manifest > "$EDGE_DIR/$HOST_NAME.json"
+chown "$CURRENT_USER" "$EDGE_DIR/$HOST_NAME.json"
+
+exit 0

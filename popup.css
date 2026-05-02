@@ -1,0 +1,822 @@
+/* ============================================================
+   Network Analyzer - Popup Styles
+   现代化简洁设计，深蓝主色调
+   ============================================================ */
+
+/* --- 基础重置与变量 --- */
+:root {
+  --color-primary: #1a2b4a;
+  --color-primary-light: #2c3e6b;
+  --color-primary-lighter: #3d5a99;
+  --color-bg: #f5f7fa;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text: #2d3748;
+  --color-text-secondary: #718096;
+  --color-text-muted: #a0aec0;
+
+  --color-green: #4CAF50;
+  --color-green-bg: #e8f5e9;
+  --color-blue: #2196F3;
+  --color-blue-bg: #e3f2fd;
+  --color-purple: #9C27B0;
+  --color-purple-bg: #f3e5f5;
+  --color-orange: #FF9800;
+  --color-orange-bg: #fff3e0;
+  --color-cyan: #00BCD4;
+  --color-cyan-bg: #e0f7fa;
+  --color-red: #f44336;
+  --color-red-bg: #ffebee;
+  --color-yellow: #FFC107;
+  --color-yellow-bg: #fff8e1;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --transition: 0.2s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 13px;
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+
+/* --- Popup 容器 --- */
+.popup-container {
+  width: 480px;
+  max-height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- 顶部状态栏 --- */
+.header {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: #fff;
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.header-title h1 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.header-note {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.4;
+}
+
+/* --- API 状态指示器 --- */
+.api-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.api-status--ok {
+  background: rgba(76, 175, 80, 0.25);
+  color: #a5d6a7;
+}
+
+.api-status--error {
+  background: rgba(244, 67, 54, 0.25);
+  color: #ef9a9a;
+}
+
+.api-status--checking {
+  background: rgba(255, 193, 7, 0.25);
+  color: #ffe082;
+}
+
+/* --- 域名列表容器 --- */
+.domain-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.domain-list-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.domain-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.domain-list-container::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+/* --- 域名条目 --- */
+.domain-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 6px;
+  overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+
+.domain-item:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.domain-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  gap: 8px;
+}
+
+.domain-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.domain-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  word-break: break-all;
+}
+
+.domain-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.domain-ip {
+  color: var(--color-text-muted);
+}
+
+.domain-count {
+  color: var(--color-text-muted);
+}
+
+.type-tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--color-blue-bg);
+  color: var(--color-blue);
+  font-weight: 500;
+}
+
+/* --- 操作按钮组 --- */
+.domain-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 10px;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-ping {
+  background: var(--color-green-bg);
+  color: var(--color-green);
+}
+
+.btn-ping:hover:not(:disabled) {
+  background: var(--color-green);
+  color: #fff;
+}
+
+.btn-mtr {
+  background: var(--color-orange-bg);
+  color: var(--color-orange);
+}
+
+.btn-mtr:hover:not(:disabled) {
+  background: var(--color-orange);
+  color: #fff;
+}
+
+.btn-timing {
+  background: var(--color-blue-bg);
+  color: var(--color-blue);
+}
+
+.btn-timing:hover:not(:disabled) {
+  background: var(--color-blue);
+  color: #fff;
+}
+
+/* --- 结果展示区域 --- */
+.result-panel {
+  border-top: 1px solid var(--color-border);
+  padding: 10px 12px;
+  background: var(--color-bg);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.result-panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+
+.probe-info {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: rgba(26, 43, 74, 0.05);
+  border-radius: var(--radius-sm);
+}
+
+/* --- 加载指示器 --- */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary-lighter);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Ping 结果样式 --- */
+.ping-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ping-stat-item {
+  text-align: center;
+  padding: 6px;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.ping-stat-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.ping-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-top: 2px;
+}
+
+.ping-stat-unit {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.ping-loss-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+}
+
+/* --- MTR 表格样式 --- */
+.mtr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.mtr-table th {
+  background: var(--color-primary);
+  color: #fff;
+  padding: 5px 6px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.mtr-table th:first-child {
+  border-radius: var(--radius-sm) 0 0 0;
+}
+
+.mtr-table th:last-child {
+  border-radius: 0 var(--radius-sm) 0 0;
+}
+
+.mtr-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.mtr-table tr:last-child td {
+  border-bottom: none;
+}
+
+.mtr-table tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.mtr-table .hop-timeout {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* --- Timing 瀑布图样式 --- */
+.waterfall-chart {
+  margin-bottom: 10px;
+}
+
+.waterfall-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.waterfall-label {
+  width: 70px;
+  flex-shrink: 0;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-align: right;
+  padding-right: 8px;
+}
+
+.waterfall-bar-container {
+  flex: 1;
+  height: 18px;
+  background: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.waterfall-bar {
+  height: 100%;
+  border-radius: 3px;
+  min-width: 2px;
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  padding-left: 4px;
+}
+
+.waterfall-bar-text {
+  font-size: 10px;
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.waterfall-value {
+  width: 65px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 500;
+  padding-left: 6px;
+}
+
+/* Timing 瀑布图颜色 */
+.bar-dns { background: var(--color-green); }
+.bar-tcp { background: var(--color-blue); }
+.bar-tls { background: var(--color-purple); }
+.bar-ttfb { background: var(--color-orange); }
+.bar-download { background: var(--color-cyan); }
+
+/* --- Timing 汇总表格 --- */
+.timing-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-top: 8px;
+}
+
+.timing-summary-table th {
+  background: var(--color-primary);
+  color: #fff;
+  padding: 4px 6px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 10px;
+}
+
+.timing-summary-table th:first-child {
+  text-align: left;
+  border-radius: var(--radius-sm) 0 0 0;
+}
+
+.timing-summary-table th:last-child {
+  border-radius: 0 var(--radius-sm) 0 0;
+}
+
+.timing-summary-table td {
+  padding: 4px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.timing-summary-table td:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+
+.timing-summary-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- 颜色高亮类 --- */
+.highlight-green {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+.highlight-yellow {
+  color: #e6a700;
+  font-weight: 600;
+}
+
+.highlight-orange {
+  color: var(--color-orange);
+  font-weight: 600;
+}
+
+.highlight-red {
+  color: var(--color-red);
+  font-weight: 600;
+}
+
+.bg-highlight-yellow {
+  background: var(--color-yellow-bg);
+}
+
+.bg-highlight-red {
+  background: var(--color-red-bg);
+}
+
+.bg-highlight-orange {
+  background: var(--color-orange-bg);
+}
+
+/* --- 空数据提示 --- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  flex: 1;
+}
+
+.empty-state-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.empty-state-text {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* --- 错误提示 --- */
+.error-message {
+  color: var(--color-red);
+  font-size: 12px;
+  padding: 8px;
+  background: var(--color-red-bg);
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+}
+
+/* --- 不可用标记 --- */
+.unavailable-text {
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 11px;
+}
+
+/* --- 底部操作栏 --- */
+.footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  flex-shrink: 0;
+}
+
+.btn-export {
+  flex: 1;
+  padding: 8px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+}
+
+.btn-export:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.btn-export:disabled {
+  background: var(--color-text-muted);
+}
+
+.btn-import {
+  flex: 1;
+  padding: 8px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-primary);
+}
+
+.btn-import:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.footer-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* --- 自动分析完成的按钮样式 --- */
+.btn-done {
+  opacity: 0.6;
+  position: relative;
+}
+
+.btn-done::after {
+  content: '✓';
+  margin-left: 2px;
+  font-size: 10px;
+}
+
+/* --- 结果区域内多个 section --- */
+.result-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.result-area > .result-panel {
+  border-top: 1px solid var(--color-border);
+  padding: 10px 12px;
+  background: var(--color-bg);
+}
+
+.result-area > .result-panel + .result-panel {
+  border-top: 1px dashed var(--color-border);
+}
+
+/* --- 数据来源标签 --- */
+.local-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--color-green-bg);
+  color: var(--color-green);
+  font-weight: 600;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.remote-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--color-orange-bg);
+  color: var(--color-orange);
+  font-weight: 600;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* --- 导入报告元信息 --- */
+.import-meta {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+}
+
+.import-meta-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.import-meta-info {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* --- Native Host 安装引导 --- */
+.native-host-guide {
+  margin: 8px;
+  padding: 14px;
+  background: var(--color-yellow-bg);
+  border: 1px solid #ffe082;
+  border-radius: var(--radius-md);
+}
+
+.native-host-guide .guide-icon {
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.native-host-guide .guide-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.native-host-guide .guide-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.native-host-guide .guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.native-host-guide .guide-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+.native-host-guide .step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.native-host-guide .guide-actions {
+  text-align: center;
+}
+
+.btn-retry {
+  padding: 6px 16px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+}
+
+.btn-retry:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.btn-install {
+  padding: 8px 20px;
+  background: var(--color-green);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  margin-right: 8px;
+}
+
+.btn-install:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.native-host-guide .guide-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-uninstall {
+  padding: 8px 12px;
+  background: var(--color-red-bg);
+  color: var(--color-red);
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-red);
+}
+
+.btn-uninstall:hover:not(:disabled) {
+  background: var(--color-red);
+  color: #fff;
+}
+
+/* --- MTR 折叠的超时跳 --- */
+.hop-collapsed {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.hop-collapsed td {
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 3px 6px;
+  font-size: 10px;
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Analyzer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- 顶部状态栏 -->
+    <header class="header">
+      <div class="header-title">
+        <h1>Network Analyzer</h1>
+        <span id="apiStatus" class="api-status api-status--checking">检测中...</span>
+      </div>
+      <p class="header-note">
+        所有诊断数据均为本地浏览器到目标服务器的真实网络状况
+      </p>
+    </header>
+
+    <!-- Native Host 未安装提示 -->
+    <div id="nativeHostGuide" class="native-host-guide" style="display: none;">
+      <div class="guide-icon">⚠️</div>
+      <div class="guide-title">需要安装本地诊断组件</div>
+      <div class="guide-desc">Ping 和 MTR 功能需要安装本地诊断程序才能执行真实的网络探测。Timing 功能无需安装即可使用。</div>
+      <div class="guide-steps">
+        <div class="guide-step">
+          <span class="step-num">1</span>
+          <span>下载对应系统的诊断程序</span>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">2</span>
+          <span>运行安装脚本注册到浏览器</span>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">3</span>
+          <span>重启浏览器后即可使用</span>
+        </div>
+      </div>
+      <div class="guide-actions">
+        <button id="installNativeBtn" class="btn btn-install">📥 安装诊断组件</button>
+        <button id="retryNativeBtn" class="btn btn-retry">🔄 重新检测</button>
+      </div>
+    </div>
+
+    <!-- 域名列表容器 -->
+    <main id="domainListContainer" class="domain-list-container">
+      <!-- 域名条目将由 JS 动态渲染 -->
+    </main>
+
+    <!-- 空数据提示 -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <div class="empty-state-icon">📡</div>
+      <p class="empty-state-text">暂无网络数据，请刷新页面后重试</p>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <footer class="footer">
+      <div class="footer-buttons">
+        <button id="exportBtn" class="btn btn-export">📋 导出报告</button>
+        <button id="importBtn" class="btn btn-import">📂 导入分析</button>
+        <button id="uninstallBtn" class="btn btn-uninstall" style="display:none">🗑️ 卸载组件</button>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none">
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
