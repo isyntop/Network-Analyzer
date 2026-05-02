@@ -105,17 +105,8 @@ if command -v gh &>/dev/null; then
 | \`network-analyzer-host-windows.zip\` | Windows Native Host 安装包 |
 "
 
-  # 收集要上传的文件
-  ASSETS=()
-  for f in \
-    "$RELEASE_DIR/network-analyzer-extension.zip" \
-    "$RELEASE_DIR"/Network-Analyzer-Host-macOS-*.pkg \
-    "$RELEASE_DIR/network-analyzer-host-macos.zip" \
-    "$RELEASE_DIR/network-analyzer-host-windows.zip"; do
-    if [ -f "$f" ]; then
-      ASSETS+=("$f")
-    fi
-  done
+  # 收集要上传的文件（只上传扩展 zip，Native Host 已打包在扩展内）
+  ASSETS=("$RELEASE_DIR/network-analyzer-extension.zip")
 
   echo "$RELEASE_NOTES" | gh release create "$VERSION" \
     "${ASSETS[@]}" \
