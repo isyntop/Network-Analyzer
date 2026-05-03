@@ -31,7 +31,8 @@ generate_manifest() {
   "path": "$BINARY_PATH",
   "type": "stdio",
   "allowed_origins": [
-    "chrome-extension://kpfbbomehbepffmhnbjmooahcfedpndg/"
+    "chrome-extension://kpfbbomehbepffmhnbjmooahcfedpndg/",
+    "chrome-extension://daenfnkblgiedkbkjnheiebnfhhmbbdo/"
   ]
 }
 MANIFEST

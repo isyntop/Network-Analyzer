@@ -6,6 +6,7 @@ set -e
 
 HOST_NAME="com.network.analyzer"
 EXTENSION_ID="kpfbbomehbepffmhnbjmooahcfedpndg"
+STORE_EXTENSION_ID="daenfnkblgiedkbkjnheiebnfhhmbbdo"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # 查找二进制文件
@@ -39,7 +40,8 @@ generate_manifest() {
   "path": "$BINARY_PATH",
   "type": "stdio",
   "allowed_origins": [
-    "chrome-extension://$EXTENSION_ID/"
+    "chrome-extension://$EXTENSION_ID/",
+    "chrome-extension://$STORE_EXTENSION_ID/"
   ]
 }
 EOF

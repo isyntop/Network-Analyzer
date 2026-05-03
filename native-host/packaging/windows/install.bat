@@ -6,6 +6,7 @@ setlocal enabledelayedexpansion
 
 set HOST_NAME=com.network.analyzer
 set EXTENSION_ID=kpfbbomehbepffmhnbjmooahcfedpndg
+set STORE_EXTENSION_ID=daenfnkblgiedkbkjnheiebnfhhmbbdo
 set INSTALL_DIR=%LOCALAPPDATA%\Network-Analyzer
 set SCRIPT_DIR=%~dp0
 
@@ -35,7 +36,8 @@ echo   "description": "Network Analyzer - 本地网络诊断工具",
 echo   "path": "!EXE_PATH_ESCAPED!",
 echo   "type": "stdio",
 echo   "allowed_origins": [
-echo     "chrome-extension://%EXTENSION_ID%/"
+echo     "chrome-extension://%EXTENSION_ID%/",
+echo     "chrome-extension://%STORE_EXTENSION_ID%/"
 echo   ]
 echo }
 ) > "%MANIFEST_PATH%"
