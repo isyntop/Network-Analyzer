@@ -24,7 +24,7 @@ function downloadPackage(os) {
   if (os === 'mac') {
     filename = 'Network-Analyzer-Host-macOS.pkg';
   } else {
-    filename = 'network-analyzer-host-windows.zip';
+    filename = 'Network-Analyzer-Host-Windows-Setup.exe';
   }
   var url = chrome.runtime.getURL('packages/' + filename);
   var a = document.createElement('a');

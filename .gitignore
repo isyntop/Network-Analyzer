@@ -8,6 +8,7 @@ native-host/dist/
 # 预编译安装包（体积大，按需构建）
 packages/*.pkg
 packages/*.zip
+packages/*.exe
 
 # 签名私钥
 *.pem

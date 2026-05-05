@@ -6,6 +6,8 @@
 set -e
 
 cd "$(dirname "$0")"
+NATIVE_HOST_DIR="$(pwd)"
+DIST_DIR="$NATIVE_HOST_DIR/dist"
 
 echo "🔨 构建 Network Analyzer Native Host..."
 echo ""
@@ -42,8 +44,24 @@ rm -rf "$WIN_PKG_DIR"
 
 echo "  ✅ dist/network-analyzer-host-windows.zip"
 echo ""
-echo "  💡 如需生成 .exe 安装包，请在 Windows 上安装 Inno Setup 后运行:"
-echo "     packaging/windows/build-installer.bat"
+
+# ─── 构建 Windows .exe 安装包 ───────────────────────────────
+
+echo "📦 构建 Windows .exe 安装包..."
+
+# 将 native host 二进制嵌入 installer
+INSTALLER_DIR="$NATIVE_HOST_DIR/installer"
+PAYLOAD_DIR="$INSTALLER_DIR/payload"
+mkdir -p "$PAYLOAD_DIR"
+cp dist/windows-amd64/network_analyzer.exe "$PAYLOAD_DIR/"
+
+# 编译 installer（交叉编译为 Windows exe）
+(cd "$INSTALLER_DIR" && GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o "$DIST_DIR/Network-Analyzer-Host-Windows-Setup.exe" .)
+
+# 清理 payload
+rm -rf "$PAYLOAD_DIR"
+
+echo "  ✅ dist/Network-Analyzer-Host-Windows-Setup.exe"
 echo ""
 
 # ─── 构建 macOS .pkg（如果指定 --pkg）──────────────────────
