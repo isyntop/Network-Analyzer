@@ -109,9 +109,30 @@ echo "============================================"
 echo "  构建产物汇总"
 echo "============================================"
 echo ""
-ls -lh dist/*.zip dist/*.pkg 2>/dev/null || true
+ls -lh dist/*.zip dist/*.pkg dist/*.exe 2>/dev/null || true
+echo ""
+
+# ─── 同步到项目根 dist/ 和 packages/ ────────────────────────
+
+PROJECT_ROOT="$(cd "$NATIVE_HOST_DIR/.." && pwd)"
+PROJECT_DIST="$PROJECT_ROOT/dist"
+PACKAGES_DIR="$PROJECT_ROOT/packages"
+
+mkdir -p "$PROJECT_DIST" "$PACKAGES_DIR"
+
+cp dist/Network-Analyzer-Host-macOS-*.pkg "$PROJECT_DIST/" 2>/dev/null || true
+cp dist/network-analyzer-host-macos.zip "$PROJECT_DIST/" 2>/dev/null || true
+cp dist/network-analyzer-host-windows.zip "$PROJECT_DIST/" 2>/dev/null || true
+cp dist/Network-Analyzer-Host-Windows-Setup.exe "$PROJECT_DIST/" 2>/dev/null || true
+
+cp dist/Network-Analyzer-Host-macOS-*.pkg "$PACKAGES_DIR/Network-Analyzer-Host-macOS.pkg" 2>/dev/null || true
+cp dist/network-analyzer-host-macos.zip "$PACKAGES_DIR/" 2>/dev/null || true
+cp dist/network-analyzer-host-windows.zip "$PACKAGES_DIR/" 2>/dev/null || true
+cp dist/Network-Analyzer-Host-Windows-Setup.exe "$PACKAGES_DIR/" 2>/dev/null || true
+
+echo "✅ 已同步到项目根 dist/ 和 packages/"
 echo ""
 echo "macOS 用户: 双击 .pkg 安装（推荐）或解压 .zip 运行 install-macos.sh"
-echo "Windows 用户: 解压 .zip，双击 install.bat 安装"
+echo "Windows 用户: 双击 .exe 安装（推荐）或解压 .zip 运行 install.bat"
 echo "卸载: macOS 运行 /usr/local/lib/network-analyzer/uninstall.sh"
-echo "      Windows 运行安装目录下的 uninstall.bat"
+echo "      Windows 运行 %LOCALAPPDATA%\\Network-Analyzer\\uninstall.exe --uninstall"

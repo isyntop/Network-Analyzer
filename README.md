@@ -52,31 +52,30 @@
 
 ### 安装 Native Host 诊断组件
 
-Ping 和 MTR 功能需要安装本地诊断组件（Go 编译的单文件程序，约 2MB，无依赖）。
+Ping 和 MTR 功能需要安装本地诊断组件（Go 编译的单文件程序，约 3-5MB，无依赖）。
 
 **首次使用时插件会自动引导安装。** 也可以手动安装：
 
 #### macOS
 
 ```bash
-# 方式一：双击 .pkg 安装（推荐）
+# 双击 .pkg 安装（推荐）
 open packages/Network-Analyzer-Host-macOS.pkg
-
-# 方式二：命令行安装
-cd native-host
-./install-macos.sh
 ```
 
 #### Windows
 
-解压 `packages/network-analyzer-host-windows.zip`，双击 `install.bat`。
+```
+双击 Network-Analyzer-Host-Windows-Setup.exe 即可完成安装。
+无需解压，无需管理员权限，自动注册到 Chrome 和 Edge。
+```
 
 > 安装后需要重启浏览器。
 
 #### 卸载 Native Host
 
 - **macOS**: `sudo /usr/local/lib/network-analyzer/uninstall.sh`
-- **Windows**: 运行安装目录下的 `uninstall.bat`
+- **Windows**: 运行 `%LOCALAPPDATA%\Network-Analyzer\uninstall.exe --uninstall`
 - 也可以在插件界面点击 🗑️ 卸载组件 按钮
 
 ## 项目结构
@@ -92,19 +91,23 @@ Network-Analyzer/
 ├── popup.html/js/css      # 弹出页面 UI
 ├── setup.html/js          # Native Host 安装引导页
 ├── icons/                 # 扩展图标
-├── packages/              # 预编译的 Native Host 安装包
+├── packages/              # 预编译的 Native Host 安装包（gitignore）
 │   ├── Network-Analyzer-Host-macOS.pkg
 │   ├── network-analyzer-host-macos.zip
+│   ├── Network-Analyzer-Host-Windows-Setup.exe
 │   └── network-analyzer-host-windows.zip
 ├── native-host/           # Native Host 源码（Go）
 │   ├── main.go            # 主程序：ping、traceroute、卸载
 │   ├── go.mod
 │   ├── build.sh           # 构建脚本（编译 + 打包）
-│   ├── install-macos.sh   # macOS 安装脚本
-│   ├── install-windows.bat
-│   └── packaging/         # .pkg / .msi 打包配置
+│   ├── install-macos.sh   # macOS 手动安装脚本
+│   ├── installer/         # Windows exe 安装包源码（Go embed）
+│   │   ├── main.go
+│   │   └── go.mod
+│   └── packaging/         # .pkg / .bat 打包配置
 ├── scripts/
 │   ├── pack-extension.sh  # 扩展打包脚本（生成商店 .zip）
+│   ├── release.sh         # 发布脚本（构建 + tag + GitHub Release）
 │   └── generate-icons.js  # 图标生成脚本
 ├── tests/                 # 测试文件
 │   ├── chrome-mock.js     # Chrome API Mock
@@ -139,9 +142,18 @@ npm test
 
 ```bash
 cd native-host
-./build.sh          # 编译 macOS + Windows
+./build.sh          # 编译 macOS + Windows + 生成 Windows exe 安装包
 ./build.sh --pkg    # 同时生成 macOS .pkg 安装包
 ```
+
+构建产物：
+
+| 文件 | 说明 |
+|------|------|
+| `dist/Network-Analyzer-Host-macOS-*.pkg` | macOS 安装包（双击安装） |
+| `dist/Network-Analyzer-Host-Windows-Setup.exe` | Windows 安装包（双击安装） |
+| `dist/network-analyzer-host-macos.zip` | macOS zip 备选 |
+| `dist/network-analyzer-host-windows.zip` | Windows zip 备选 |
 
 ### 打包扩展
 
@@ -150,13 +162,12 @@ cd native-host
 ./scripts/pack-extension.sh --crx    # 同时生成企业分发用 .crx
 ```
 
-输出文件在 `dist/` 目录：
+### 发布
 
-| 文件 | 用途 |
-|------|------|
-| `network-analyzer-extension.zip` | 上传 Chrome Web Store / Edge Add-ons |
-| `network-analyzer.crx` | 企业内部分发 |
-| `network-analyzer.pem` | .crx 签名私钥（妥善保管） |
+```bash
+./scripts/release.sh v1.0.1          # 构建 + tag + 推送 + 创建 GitHub Release
+./scripts/release.sh v1.0.1 --dry    # 仅构建，不推送
+```
 
 ## 浏览器兼容性
 
@@ -169,7 +180,7 @@ cd native-host
 | 系统 | Ping | Traceroute | 安装方式 |
 |------|------|------------|----------|
 | macOS (Intel/Apple Silicon) | ✅ 系统 ping | ✅ 系统 traceroute | .pkg 双击安装 |
-| Windows 10/11 | ✅ 系统 ping | ✅ 系统 tracert | .bat 双击安装 |
+| Windows 10/11 | ✅ 系统 ping | ✅ 系统 tracert | .exe 双击安装 |
 | Linux | ✅ 系统 ping | ✅ 系统 traceroute | 手动安装 |
 
 ## 隐私说明
