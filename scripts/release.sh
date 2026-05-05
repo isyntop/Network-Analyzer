@@ -19,7 +19,40 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$PROJECT_DIR"
 
+# 从 tag 中提取纯版本号（去掉 v 前缀）
+SEMVER="${VERSION#v}"
+
 echo "🚀 发布 Network Analyzer $VERSION"
+echo ""
+
+# ─── 0. 同步版本号到 manifest.json 和 package.json ──────────
+
+echo "📦 步骤 0: 同步版本号 → $SEMVER"
+
+# 更新 manifest.json 中的 version 字段
+python3 -c "
+import json
+with open('manifest.json', 'r') as f:
+    m = json.load(f)
+m['version'] = '$SEMVER'
+with open('manifest.json', 'w') as f:
+    json.dump(m, f, indent=2, ensure_ascii=False)
+    f.write('\n')
+"
+
+# 更新 package.json 中的 version 字段
+python3 -c "
+import json
+with open('package.json', 'r') as f:
+    m = json.load(f)
+m['version'] = '$SEMVER'
+with open('package.json', 'w') as f:
+    json.dump(m, f, indent=2, ensure_ascii=False)
+    f.write('\n')
+"
+
+echo "  ✅ manifest.json → $SEMVER"
+echo "  ✅ package.json  → $SEMVER"
 echo ""
 
 # ─── 1. 构建 Native Host ────────────────────────────────────
@@ -68,6 +101,13 @@ fi
 echo ""
 echo "📦 步骤 5/5: 创建 Git tag 并推送..."
 
+# 提交版本号变更
+git add manifest.json package.json
+if ! git diff --cached --quiet; then
+  git commit -m "chore: bump version to $SEMVER"
+  echo "  ✅ 已提交版本号变更"
+fi
+
 # 检查 tag 是否已存在
 if git rev-parse "$VERSION" >/dev/null 2>&1; then
   echo "⚠️  Tag $VERSION 已存在，跳过创建"
@@ -94,7 +134,7 @@ if command -v gh &>/dev/null; then
 
 **本地诊断组件（Ping/MTR 功能需要）：**
 - macOS: 下载 \`.pkg\` 双击安装
-- Windows: 下载 \`.zip\` 解压后双击 \`install.bat\`
+- Windows: 下载 \`.exe\` 双击安装
 
 ### 文件说明
 
@@ -102,8 +142,9 @@ if command -v gh &>/dev/null; then
 |------|------|
 | \`network-analyzer-extension.zip\` | 浏览器扩展（上传商店或开发者模式加载） |
 | \`Network-Analyzer-Host-macOS-*.pkg\` | macOS Native Host 安装包 |
-| \`network-analyzer-host-macos.zip\` | macOS Native Host（zip 格式备选） |
-| \`network-analyzer-host-windows.zip\` | Windows Native Host 安装包 |
+| \`Network-Analyzer-Host-Windows-Setup.exe\` | Windows Native Host 安装包 |
+| \`network-analyzer-host-macos.zip\` | macOS（zip 格式备选） |
+| \`network-analyzer-host-windows.zip\` | Windows（zip 格式备选） |
 "
 
   # 收集要上传的文件（只上传扩展 zip，Native Host 已打包在扩展内）
