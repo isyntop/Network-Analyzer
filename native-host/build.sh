@@ -42,6 +42,9 @@ rm -rf "$WIN_PKG_DIR"
 
 echo "  ✅ dist/network-analyzer-host-windows.zip"
 echo ""
+echo "  💡 如需生成 .exe 安装包，请在 Windows 上安装 Inno Setup 后运行:"
+echo "     packaging/windows/build-installer.bat"
+echo ""
 
 # ─── 构建 macOS .pkg（如果指定 --pkg）──────────────────────
 
