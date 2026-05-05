@@ -36,6 +36,7 @@ echo "📦 步骤 2/5: 更新 packages/..."
 cp native-host/dist/Network-Analyzer-Host-macOS-*.pkg packages/Network-Analyzer-Host-macOS.pkg 2>/dev/null || true
 cp native-host/dist/network-analyzer-host-macos.zip packages/ 2>/dev/null || true
 cp native-host/dist/network-analyzer-host-windows.zip packages/ 2>/dev/null || true
+cp native-host/dist/Network-Analyzer-Host-Windows-Setup.exe packages/ 2>/dev/null || true
 
 # ─── 3. 打包扩展 ────────────────────────────────────────────
 
