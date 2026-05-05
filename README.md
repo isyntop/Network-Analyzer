@@ -125,6 +125,7 @@ Network-Analyzer/
 
 - Node.js 18+
 - Go 1.21+（编译 Native Host）
+- GitHub CLI (`gh`)（发布 Release 用）
 
 ### 安装依赖
 
@@ -138,36 +139,83 @@ npm install
 npm test
 ```
 
-### 编译 Native Host
+### 从零构建完整发布包
+
+以下是从干净仓库到生成所有可发布产物的完整步骤：
 
 ```bash
+# 1. 编译 Native Host（macOS/Windows 二进制 + 所有安装包）
 cd native-host
-./build.sh          # 编译 macOS + Windows + 生成 Windows exe 安装包
-./build.sh --pkg    # 同时生成 macOS .pkg 安装包
+./build.sh --pkg
+cd ..
+
+# 2. 打包浏览器扩展（生成商店上传用 .zip）
+./scripts/pack-extension.sh
 ```
 
-构建产物：
+执行完毕后，所有产物在项目根 `dist/` 目录：
 
-| 文件 | 说明 |
+| 文件 | 用途 |
 |------|------|
-| `dist/Network-Analyzer-Host-macOS-*.pkg` | macOS 安装包（双击安装） |
-| `dist/Network-Analyzer-Host-Windows-Setup.exe` | Windows 安装包（双击安装） |
-| `dist/network-analyzer-host-macos.zip` | macOS zip 备选 |
-| `dist/network-analyzer-host-windows.zip` | Windows zip 备选 |
+| `network-analyzer-extension.zip` | **上传 Chrome Web Store / Edge Add-ons** |
+| `Network-Analyzer-Host-macOS-arm64.pkg` | macOS Native Host 安装包 |
+| `Network-Analyzer-Host-Windows-Setup.exe` | Windows Native Host 安装包 |
+| `network-analyzer-host-macos.zip` | macOS zip 备选 |
+| `network-analyzer-host-windows.zip` | Windows zip 备选 |
 
-### 打包扩展
+> `build.sh` 会自动将产物同步到 `dist/` 和 `packages/`，`pack-extension.sh` 会将 `packages/` 中的安装包打入扩展 zip，用户安装扩展后可直接从插件内下载对应平台的安装包。
 
-```bash
-./scripts/pack-extension.sh          # 生成商店上传用 .zip
-./scripts/pack-extension.sh --crx    # 同时生成企业分发用 .crx
-```
-
-### 发布
+### 一键发布（推荐）
 
 ```bash
-./scripts/release.sh v1.0.1          # 构建 + tag + 推送 + 创建 GitHub Release
-./scripts/release.sh v1.0.1 --dry    # 仅构建，不推送
+./scripts/release.sh v1.0.3
 ```
+
+此命令会自动完成以下所有步骤：
+
+1. 将版本号 `1.0.3` 写入 `manifest.json` 和 `package.json`
+2. 编译 Native Host + 生成 macOS .pkg + Windows .exe
+3. 将安装包同步到 `packages/` 目录
+4. 打包扩展 .zip（内含安装包）
+5. 提交版本号变更、创建 git tag、推送到 GitHub
+6. 创建 GitHub Release 并上传所有产物
+
+发布后去 [Chrome Web Store 开发者后台](https://chrome.google.com/webstore/devconsole) 上传 `dist/network-analyzer-extension.zip` 即可。
+
+如果只想构建不推送：
+
+```bash
+./scripts/release.sh v1.0.3 --dry
+```
+
+### 手动分步操作
+
+如果不想用一键发布脚本，也可以分步执行：
+
+```bash
+# 编译 Native Host（不含 .pkg）
+cd native-host
+./build.sh
+cd ..
+
+# 编译 Native Host（含 macOS .pkg）
+cd native-host
+./build.sh --pkg
+cd ..
+
+# 仅打包扩展（前提：packages/ 中已有安装包）
+./scripts/pack-extension.sh
+
+# 打包扩展 + 生成企业分发用 .crx
+./scripts/pack-extension.sh --crx
+```
+
+### 上传商店注意事项
+
+- 商店要求每次上传的 `manifest.json` 中 version 必须高于已发布版本
+- `release.sh` 会自动处理版本号递增，手动操作时需自行修改 `manifest.json` 中的 `version` 字段
+- 上传文件为 `dist/network-analyzer-extension.zip`
+- 同一个 zip 可同时用于 Chrome Web Store 和 Edge Add-ons
 
 ## 浏览器兼容性
 
