@@ -65,17 +65,14 @@ open packages/Network-Analyzer-Host-macOS.pkg
 
 #### Windows
 
-```
-双击 Network-Analyzer-Host-Windows-Setup.exe 即可完成安装。
-无需解压，无需管理员权限，自动注册到 Chrome 和 Edge。
-```
+解压 `network-analyzer-host-windows.zip`，双击 `install.bat` 即可完成安装。无需管理员权限，自动注册到 Chrome 和 Edge。
 
 > 安装后需要重启浏览器。
 
 #### 卸载 Native Host
 
 - **macOS**: `sudo /usr/local/lib/network-analyzer/uninstall.sh`
-- **Windows**: 运行 `%LOCALAPPDATA%\Network-Analyzer\uninstall.exe --uninstall`
+- **Windows**: 运行 `%LOCALAPPDATA%\Network-Analyzer\uninstall.bat`
 - 也可以在插件界面点击 🗑️ 卸载组件 按钮
 
 ## 项目结构
@@ -94,16 +91,12 @@ Network-Analyzer/
 ├── packages/              # 预编译的 Native Host 安装包（gitignore）
 │   ├── Network-Analyzer-Host-macOS.pkg
 │   ├── network-analyzer-host-macos.zip
-│   ├── Network-Analyzer-Host-Windows-Setup.exe
 │   └── network-analyzer-host-windows.zip
 ├── native-host/           # Native Host 源码（Go）
 │   ├── main.go            # 主程序：ping、traceroute、卸载
 │   ├── go.mod
 │   ├── build.sh           # 构建脚本（编译 + 打包）
 │   ├── install-macos.sh   # macOS 手动安装脚本
-│   ├── installer/         # Windows exe 安装包源码（Go embed）
-│   │   ├── main.go
-│   │   └── go.mod
 │   └── packaging/         # .pkg / .bat 打包配置
 ├── scripts/
 │   ├── pack-extension.sh  # 扩展打包脚本（生成商店 .zip）
@@ -159,9 +152,8 @@ cd ..
 |------|------|
 | `network-analyzer-extension.zip` | **上传 Chrome Web Store / Edge Add-ons** |
 | `Network-Analyzer-Host-macOS-arm64.pkg` | macOS Native Host 安装包 |
-| `Network-Analyzer-Host-Windows-Setup.exe` | Windows Native Host 安装包 |
 | `network-analyzer-host-macos.zip` | macOS zip 备选 |
-| `network-analyzer-host-windows.zip` | Windows zip 备选 |
+| `network-analyzer-host-windows.zip` | Windows Native Host 安装包 |
 
 > `build.sh` 会自动将产物同步到 `dist/` 和 `packages/`，`pack-extension.sh` 会将 `packages/` 中的安装包打入扩展 zip，用户安装扩展后可直接从插件内下载对应平台的安装包。
 
@@ -174,7 +166,7 @@ cd ..
 此命令会自动完成以下所有步骤：
 
 1. 将版本号 `1.0.3` 写入 `manifest.json` 和 `package.json`
-2. 编译 Native Host + 生成 macOS .pkg + Windows .exe
+2. 编译 Native Host + 生成 macOS .pkg + Windows zip 安装包
 3. 将安装包同步到 `packages/` 目录
 4. 打包扩展 .zip（内含安装包）
 5. 提交版本号变更、创建 git tag、推送到 GitHub
@@ -228,7 +220,7 @@ cd ..
 | 系统 | Ping | Traceroute | 安装方式 |
 |------|------|------------|----------|
 | macOS (Intel/Apple Silicon) | ✅ 系统 ping | ✅ 系统 traceroute | .pkg 双击安装 |
-| Windows 10/11 | ✅ 系统 ping | ✅ 系统 tracert | .exe 双击安装 |
+| Windows 10/11 | ✅ 系统 ping | ✅ 系统 tracert | .zip 解压运行 install.bat |
 | Linux | ✅ 系统 ping | ✅ 系统 traceroute | 手动安装 |
 
 ## 隐私说明

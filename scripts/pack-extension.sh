@@ -38,7 +38,6 @@ EXTENSION_FILES=(
   packages/Network-Analyzer-Host-macOS.pkg
   packages/network-analyzer-host-macos.zip
   packages/network-analyzer-host-windows.zip
-  packages/Network-Analyzer-Host-Windows-Setup.exe
 )
 
 # ─── 1. 生成商店上传用 .zip ──────────────────────────────────

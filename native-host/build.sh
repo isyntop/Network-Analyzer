@@ -45,25 +45,6 @@ rm -rf "$WIN_PKG_DIR"
 echo "  ✅ dist/network-analyzer-host-windows.zip"
 echo ""
 
-# ─── 构建 Windows .exe 安装包 ───────────────────────────────
-
-echo "📦 构建 Windows .exe 安装包..."
-
-# 将 native host 二进制嵌入 installer
-INSTALLER_DIR="$NATIVE_HOST_DIR/installer"
-PAYLOAD_DIR="$INSTALLER_DIR/payload"
-mkdir -p "$PAYLOAD_DIR"
-cp dist/windows-amd64/network_analyzer.exe "$PAYLOAD_DIR/"
-
-# 编译 installer（交叉编译为 Windows exe）
-(cd "$INSTALLER_DIR" && GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o "$DIST_DIR/Network-Analyzer-Host-Windows-Setup.exe" .)
-
-# 清理 payload
-rm -rf "$PAYLOAD_DIR"
-
-echo "  ✅ dist/Network-Analyzer-Host-Windows-Setup.exe"
-echo ""
-
 # ─── 构建 macOS .pkg（如果指定 --pkg）──────────────────────
 
 if [ "$1" = "--pkg" ]; then
@@ -109,7 +90,7 @@ echo "============================================"
 echo "  构建产物汇总"
 echo "============================================"
 echo ""
-ls -lh dist/*.zip dist/*.pkg dist/*.exe 2>/dev/null || true
+ls -lh dist/*.zip dist/*.pkg 2>/dev/null || true
 echo ""
 
 # ─── 同步到项目根 dist/ 和 packages/ ────────────────────────
@@ -123,16 +104,14 @@ mkdir -p "$PROJECT_DIST" "$PACKAGES_DIR"
 cp dist/Network-Analyzer-Host-macOS-*.pkg "$PROJECT_DIST/" 2>/dev/null || true
 cp dist/network-analyzer-host-macos.zip "$PROJECT_DIST/" 2>/dev/null || true
 cp dist/network-analyzer-host-windows.zip "$PROJECT_DIST/" 2>/dev/null || true
-cp dist/Network-Analyzer-Host-Windows-Setup.exe "$PROJECT_DIST/" 2>/dev/null || true
 
 cp dist/Network-Analyzer-Host-macOS-*.pkg "$PACKAGES_DIR/Network-Analyzer-Host-macOS.pkg" 2>/dev/null || true
 cp dist/network-analyzer-host-macos.zip "$PACKAGES_DIR/" 2>/dev/null || true
 cp dist/network-analyzer-host-windows.zip "$PACKAGES_DIR/" 2>/dev/null || true
-cp dist/Network-Analyzer-Host-Windows-Setup.exe "$PACKAGES_DIR/" 2>/dev/null || true
 
 echo "✅ 已同步到项目根 dist/ 和 packages/"
 echo ""
 echo "macOS 用户: 双击 .pkg 安装（推荐）或解压 .zip 运行 install-macos.sh"
-echo "Windows 用户: 双击 .exe 安装（推荐）或解压 .zip 运行 install.bat"
+echo "Windows 用户: 解压 .zip 双击 install.bat 安装"
 echo "卸载: macOS 运行 /usr/local/lib/network-analyzer/uninstall.sh"
-echo "      Windows 运行 %LOCALAPPDATA%\\Network-Analyzer\\uninstall.exe --uninstall"
+echo "      Windows 运行安装目录下的 uninstall.bat"

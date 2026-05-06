@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Network Analyzer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "监听页面网络请求，分析域名/IP延迟、丢包及路由追踪",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw35CZob+l7oD6+K80naUi5OQfg3U+QcUwuDvkzpK5+xw6gpEzKZscuhvQq1J8iK2zZFIrGhwdX16OOGDv7Am7WIegKRr0h8vF7LGpi42GNawMNJpmCDvQj5uFVtd+TRqAoyw8NO8P1zu1wfuSul2T+wlaHPAEGuj67WWzVAoK+dVXuq2qulcZTrM3XFiC2QeCpIMybQ27FDuKIHkMQJhq1y73iNCPWuAzCLWHZQ98qqSPFIfbNZ/P/XMAeVWRwiZzbE7YeJOnabTEaS1UwtbDD/kVIQRt5UcV6b2xWqDqLyZ/P+ZFt18PIWRvqxxHfdIjZwCTezS0EWZDTbo/6mO+wIDAQAB",
   "permissions": [
