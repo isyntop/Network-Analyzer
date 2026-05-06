@@ -3,6 +3,12 @@
  * 独立 JS 文件，符合 Chrome 扩展 CSP 要求（禁止内联脚本）
  */
 
+// ─── GitHub Release 下载地址 ───────────────────────────────
+// 使用 /latest/ 始终指向最新发布版本，发布新版无需修改扩展
+var GITHUB_RELEASE_BASE = 'https://github.com/isyntop/Network-Analyzer/releases/latest/download/';
+var DOWNLOAD_MAC = GITHUB_RELEASE_BASE + 'Network-Analyzer-Host-macOS-arm64.pkg';
+var DOWNLOAD_WIN = GITHUB_RELEASE_BASE + 'network-analyzer-host-windows.zip';
+
 // ─── Tab 切换 ───────────────────────────────────────────────
 
 function switchTab(os) {
@@ -17,22 +23,12 @@ function switchTab(os) {
   }
 }
 
-// ─── 下载安装包 ─────────────────────────────────────────────
+// ─── 下载安装包（从 GitHub Release）─────────────────────────
 
 function downloadPackage(os) {
-  var filename;
-  if (os === 'mac') {
-    filename = 'Network-Analyzer-Host-macOS.pkg';
-  } else {
-    filename = 'network-analyzer-host-windows.zip';
-  }
-  var url = chrome.runtime.getURL('packages/' + filename);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  var url = (os === 'mac') ? DOWNLOAD_MAC : DOWNLOAD_WIN;
+  // 在新标签页打开下载链接，浏览器会自动触发下载
+  chrome.tabs.create({ url: url });
 }
 
 // ─── 状态检测 ───────────────────────────────────────────────

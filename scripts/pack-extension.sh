@@ -35,9 +35,6 @@ EXTENSION_FILES=(
   icons/icon16.png
   icons/icon48.png
   icons/icon128.png
-  packages/Network-Analyzer-Host-macOS.pkg
-  packages/network-analyzer-host-macos.zip
-  packages/network-analyzer-host-windows.zip
 )
 
 # ─── 1. 生成商店上传用 .zip ──────────────────────────────────
@@ -61,9 +58,7 @@ done
 
 if [ "$MISSING" -eq 1 ]; then
   echo ""
-  echo "❌ 部分文件缺失，请先构建 Native Host 安装包："
-  echo "   cd native-host && ./build.sh --pkg"
-  echo "   然后将安装包复制到 packages/ 目录"
+  echo "❌ 部分扩展源文件缺失"
   exit 1
 fi
 
