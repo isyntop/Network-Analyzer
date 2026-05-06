@@ -69,6 +69,7 @@ echo "📦 步骤 2/5: 更新 packages/..."
 cp native-host/dist/Network-Analyzer-Host-macOS-*.pkg packages/Network-Analyzer-Host-macOS.pkg 2>/dev/null || true
 cp native-host/dist/network-analyzer-host-macos.zip packages/ 2>/dev/null || true
 cp native-host/dist/network-analyzer-host-windows.zip packages/ 2>/dev/null || true
+cp native-host/dist/Network-Analyzer-Host-Windows-Setup.exe packages/ 2>/dev/null || true
 
 # ─── 3. 打包扩展 ────────────────────────────────────────────
 
@@ -133,7 +134,7 @@ if command -v gh &>/dev/null; then
 
 **本地诊断组件（Ping/MTR 功能需要）：**
 - macOS: 下载 \`.pkg\` 双击安装
-- Windows: 下载 \`.zip\` 解压后双击 \`install.bat\`
+- Windows: 下载 \`.exe\` 双击安装
 
 ### 文件说明
 
@@ -141,8 +142,9 @@ if command -v gh &>/dev/null; then
 |------|------|
 | \`network-analyzer-extension.zip\` | 浏览器扩展（上传商店或开发者模式加载） |
 | \`Network-Analyzer-Host-macOS-*.pkg\` | macOS Native Host 安装包 |
+| \`Network-Analyzer-Host-Windows-Setup.exe\` | Windows Native Host 安装包 |
 | \`network-analyzer-host-macos.zip\` | macOS（zip 格式备选） |
-| \`network-analyzer-host-windows.zip\` | Windows Native Host 安装包 |
+| \`network-analyzer-host-windows.zip\` | Windows（zip 格式备选） |
 "
 
   # 收集要上传的文件（只上传扩展 zip，Native Host 已打包在扩展内）

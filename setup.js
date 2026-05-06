@@ -7,7 +7,7 @@
 // 使用 /latest/ 始终指向最新发布版本，发布新版无需修改扩展
 var GITHUB_RELEASE_BASE = 'https://github.com/isyntop/Network-Analyzer/releases/latest/download/';
 var DOWNLOAD_MAC = GITHUB_RELEASE_BASE + 'Network-Analyzer-Host-macOS-arm64.pkg';
-var DOWNLOAD_WIN = GITHUB_RELEASE_BASE + 'network-analyzer-host-windows.zip';
+var DOWNLOAD_WIN = GITHUB_RELEASE_BASE + 'Network-Analyzer-Host-Windows-Setup.exe';
 
 // ─── Tab 切换 ───────────────────────────────────────────────
 
