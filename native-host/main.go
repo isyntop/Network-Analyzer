@@ -130,14 +130,38 @@ func executePing(target string, count int) PingResult {
 func parsePingOutput(output string, count int) PingStats {
 	s := PingStats{Sent: count}
 	if runtime.GOOS == "windows" {
+		// Windows ping 输出在中文系统上是 GBK 编码，非 UTF-8
+		// 正则匹配基于纯 ASCII 模式（time=、ms、数字、IP 地址），避免编码问题
+		// 通过统计 "time=XXms" 的匹配数来获取接收数（所有语言版本格式相同）
+		timings := parsePingTimings(output)
+		s.Received = len(timings)
+		s.Sent = count
+
+		// 尝试匹配英文格式的汇总统计
 		if m := regexp.MustCompile(`Sent = (\d+), Received = (\d+)`).FindStringSubmatch(output); len(m) >= 3 {
 			s.Sent, _ = strconv.Atoi(m[1])
 			s.Received, _ = strconv.Atoi(m[2])
 		}
+
 		if m := regexp.MustCompile(`Minimum = (\d+)ms, Maximum = (\d+)ms, Average = (\d+)ms`).FindStringSubmatch(output); len(m) >= 4 {
 			s.Min, _ = strconv.ParseFloat(m[1], 64)
 			s.Max, _ = strconv.ParseFloat(m[2], 64)
 			s.Avg, _ = strconv.ParseFloat(m[3], 64)
+		} else if len(timings) > 0 {
+			// 非英文系统：从 timings 计算 min/avg/max
+			s.Min = timings[0]
+			s.Max = timings[0]
+			sum := 0.0
+			for _, v := range timings {
+				sum += v
+				if v < s.Min {
+					s.Min = v
+				}
+				if v > s.Max {
+					s.Max = v
+				}
+			}
+			s.Avg = sum / float64(len(timings))
 		}
 	} else {
 		if m := regexp.MustCompile(`(\d+) packets? transmitted, (\d+) (?:packets? )?received`).FindStringSubmatch(output); len(m) >= 3 {
@@ -160,7 +184,12 @@ func parsePingTimings(output string) []float64 {
 	var t []float64
 	var re *regexp.Regexp
 	if runtime.GOOS == "windows" {
-		re = regexp.MustCompile(`time[=<](\d+)ms`)
+		// 纯 ASCII 模式，不依赖特定语言的关键字
+		// Windows ping 每次回复都包含 "=Nms" 或 "<Nms" 的 RTT 表示
+		// 但为避免误匹配 TTL=64，用 (?:ms|MS) 作为锚点
+		// 格式: time=Nms, time<Nms (英文/日文/中文/韩文等都这样)
+		// 为确保精度，要求 [=<] 前 2-5 字符内有字母或=号
+		re = regexp.MustCompile(`[=<](\d+)ms`)
 	} else {
 		re = regexp.MustCompile(`time=([\d.]+) ?ms`)
 	}

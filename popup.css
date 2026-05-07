@@ -361,6 +361,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 11px;
+  table-layout: fixed;
 }
 
 .mtr-table th {
@@ -381,10 +382,31 @@ body {
   border-radius: 0 var(--radius-sm) 0 0;
 }
 
+/* 列宽：# | 主机 | Min | Avg | Max | 丢包 */
+.mtr-table th:nth-child(1),
+.mtr-table td:nth-child(1) { width: 36px; }
+.mtr-table th:nth-child(2),
+.mtr-table td:nth-child(2) { width: auto; }
+.mtr-table th:nth-child(3),
+.mtr-table td:nth-child(3),
+.mtr-table th:nth-child(4),
+.mtr-table td:nth-child(4),
+.mtr-table th:nth-child(5),
+.mtr-table td:nth-child(5) { width: 48px; text-align: right; }
+.mtr-table th:nth-child(6),
+.mtr-table td:nth-child(6) { width: 50px; text-align: right; }
+
 .mtr-table td {
   padding: 4px 6px;
   border-bottom: 1px solid var(--color-border);
-  white-space: nowrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* 主机列：长域名优先换行显示，不被右侧数字挤出 */
+.mtr-table td:nth-child(2) {
+  white-space: normal;
+  line-height: 1.4;
 }
 
 .mtr-table tr:last-child td {
