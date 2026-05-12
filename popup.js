@@ -15,6 +15,7 @@
 
 let currentTabId = null;
 let apiAvailable = false;
+let analysisRunning = false; // 标记是否有探测正在执行
 
 // ─── 工具函数 ───────────────────────────────────────────────────
 
@@ -169,6 +170,10 @@ async function autoAnalyzeAll(data) {
   var domains = Object.keys(data).sort();
   var promises = [];
 
+  // 标记分析开始，禁用导出按钮
+  analysisRunning = true;
+  updateExportBtnState();
+
   // 所有域名的 Timing、Ping、MTR 全部并发执行
   domains.forEach(function(domain) {
     var info = data[domain];
@@ -186,6 +191,28 @@ async function autoAnalyzeAll(data) {
 
   // 等待所有分析完成（各自独立，互不阻塞）
   await Promise.allSettled(promises);
+
+  // 标记分析结束，恢复导出按钮
+  analysisRunning = false;
+  updateExportBtnState();
+}
+
+/**
+ * 根据分析状态更新导出按钮的可用性和提示文案
+ */
+function updateExportBtnState() {
+  var exportBtn = document.getElementById('exportBtn');
+  if (!exportBtn) return;
+
+  if (analysisRunning) {
+    exportBtn.disabled = true;
+    exportBtn.textContent = '⏳ 探测进行中...';
+    exportBtn.title = '请等待所有网络探测完成后再导出报告';
+  } else {
+    exportBtn.disabled = false;
+    exportBtn.textContent = '📋 导出报告';
+    exportBtn.title = '';
+  }
 }
 
 /**
@@ -832,6 +859,12 @@ function renderTimingResult(domain, result) {
  * 导出报告按钮点击处理
  */
 async function handleExportClick() {
+  // 如果探测仍在进行中，阻止导出并提示
+  if (analysisRunning) {
+    alert('网络探测尚未完成，请等待所有探测执行结束后再导出报告。');
+    return;
+  }
+
   var exportBtn = document.getElementById('exportBtn');
   if (exportBtn) exportBtn.disabled = true;
 

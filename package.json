@@ -1,6 +1,6 @@
 {
   "name": "network-analyzer",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Network Analyzer - 监听页面网络请求，分析域名/IP延迟、丢包及路由追踪",
   "private": true,
   "type": "module",

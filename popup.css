@@ -623,6 +623,11 @@ body {
 
 .btn-export:disabled {
   background: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.btn-export:disabled[title] {
+  position: relative;
 }
 
 .btn-import {
