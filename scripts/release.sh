@@ -147,8 +147,17 @@ if command -v gh &>/dev/null; then
 | \`network-analyzer-host-windows.zip\` | Windows（zip 格式备选） |
 "
 
-  # 收集要上传的文件（只上传扩展 zip，Native Host 已打包在扩展内）
+  # 收集要上传的文件
+  # 注意：setup.js 通过 GitHub Release 的 latest/download 链接下载 Native Host 安装包，
+  # 因此 .pkg / .exe 必须作为 Release 资产上传，否则用户按引导下载会 404。
   ASSETS=("$RELEASE_DIR/network-analyzer-extension.zip")
+  for f in \
+    "$RELEASE_DIR"/Network-Analyzer-Host-macOS-*.pkg \
+    "$RELEASE_DIR"/Network-Analyzer-Host-Windows-Setup.exe \
+    "$RELEASE_DIR"/network-analyzer-host-macos.zip \
+    "$RELEASE_DIR"/network-analyzer-host-windows.zip; do
+    [ -f "$f" ] && ASSETS+=("$f")
+  done
 
   echo "$RELEASE_NOTES" | gh release create "$VERSION" \
     "${ASSETS[@]}" \
