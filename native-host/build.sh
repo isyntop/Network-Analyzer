@@ -75,17 +75,22 @@ if [ "$1" = "--pkg" ]; then
   echo ""
 fi
 
-# ─── 打包 macOS 安装包（zip，给没有 pkgbuild 的环境用）─────
-
+# 打包 macOS 安装包（zip，给没有 pkgbuild 的环境用）
+# 使用通用二进制（universal），同时兼容 Intel 与 Apple Silicon
 echo "📦 打包 macOS 安装包..."
 
-ARCH=$(uname -m)
-if [ "$ARCH" = "arm64" ]; then
-  MAC_BINARY="dist/darwin-arm64/network_analyzer"
-  MAC_ARCH="arm64"
+UNIVERSAL_BIN="dist/darwin-universal/network_analyzer"
+if command -v lipo >/dev/null 2>&1; then
+  mkdir -p "$(dirname "$UNIVERSAL_BIN")"
+  lipo -create dist/darwin-arm64/network_analyzer dist/darwin-amd64/network_analyzer -output "$UNIVERSAL_BIN"
+  MAC_BINARY="$UNIVERSAL_BIN"
 else
-  MAC_BINARY="dist/darwin-amd64/network_analyzer"
-  MAC_ARCH="amd64"
+  ARCH=$(uname -m)
+  if [ "$ARCH" = "arm64" ]; then
+    MAC_BINARY="dist/darwin-arm64/network_analyzer"
+  else
+    MAC_BINARY="dist/darwin-amd64/network_analyzer"
+  fi
 fi
 
 MAC_PKG_DIR=$(mktemp -d)
@@ -120,12 +125,12 @@ PACKAGES_DIR="$PROJECT_ROOT/packages"
 
 mkdir -p "$PROJECT_DIST" "$PACKAGES_DIR"
 
-cp dist/Network-Analyzer-Host-macOS-*.pkg "$PROJECT_DIST/" 2>/dev/null || true
+cp dist/Network-Analyzer-Host-macOS-universal.pkg "$PROJECT_DIST/" 2>/dev/null || true
 cp dist/network-analyzer-host-macos.zip "$PROJECT_DIST/" 2>/dev/null || true
 cp dist/network-analyzer-host-windows.zip "$PROJECT_DIST/" 2>/dev/null || true
 cp dist/Network-Analyzer-Host-Windows-Setup.exe "$PROJECT_DIST/" 2>/dev/null || true
 
-cp dist/Network-Analyzer-Host-macOS-*.pkg "$PACKAGES_DIR/Network-Analyzer-Host-macOS.pkg" 2>/dev/null || true
+cp dist/Network-Analyzer-Host-macOS-universal.pkg "$PACKAGES_DIR/Network-Analyzer-Host-macOS.pkg" 2>/dev/null || true
 cp dist/network-analyzer-host-macos.zip "$PACKAGES_DIR/" 2>/dev/null || true
 cp dist/network-analyzer-host-windows.zip "$PACKAGES_DIR/" 2>/dev/null || true
 cp dist/Network-Analyzer-Host-Windows-Setup.exe "$PACKAGES_DIR/" 2>/dev/null || true

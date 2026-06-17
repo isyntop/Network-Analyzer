@@ -12,14 +12,32 @@ DIST_DIR="$NATIVE_HOST_DIR/dist"
 
 echo "📦 构建 macOS .pkg 安装包..."
 
-# 检测当前架构，选择对应二进制
-ARCH=$(uname -m)
-if [ "$ARCH" = "arm64" ]; then
-  BINARY="$DIST_DIR/darwin-arm64/network_analyzer"
-  PKG_ARCH="arm64"
+# 合成通用二进制（universal: arm64 + amd64），单个 .pkg 同时支持 Intel 与 Apple Silicon
+ARM_BIN="$DIST_DIR/darwin-arm64/network_analyzer"
+AMD_BIN="$DIST_DIR/darwin-amd64/network_analyzer"
+
+if [ ! -f "$ARM_BIN" ] || [ ! -f "$AMD_BIN" ]; then
+  echo "❌ 缺少架构二进制（需要 arm64 与 amd64）"
+  echo "   请先运行: cd $NATIVE_HOST_DIR && ./build.sh"
+  exit 1
+fi
+
+UNIVERSAL_BIN="$DIST_DIR/darwin-universal/network_analyzer"
+mkdir -p "$(dirname "$UNIVERSAL_BIN")"
+
+if command -v lipo >/dev/null 2>&1; then
+  lipo -create "$ARM_BIN" "$AMD_BIN" -output "$UNIVERSAL_BIN"
+  BINARY="$UNIVERSAL_BIN"
+  PKG_ARCH="universal"
 else
-  BINARY="$DIST_DIR/darwin-amd64/network_analyzer"
-  PKG_ARCH="amd64"
+  # 无 lipo 时退回当前架构（仍可用，但非通用包）
+  echo "  ⚠️  未找到 lipo，退回当前架构二进制"
+  ARCH=$(uname -m)
+  if [ "$ARCH" = "arm64" ]; then
+    BINARY="$ARM_BIN"; PKG_ARCH="arm64"
+  else
+    BINARY="$AMD_BIN"; PKG_ARCH="amd64"
+  fi
 fi
 
 if [ ! -f "$BINARY" ]; then

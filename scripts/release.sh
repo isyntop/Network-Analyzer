@@ -66,7 +66,7 @@ cd "$PROJECT_DIR"
 
 echo ""
 echo "📦 步骤 2/5: 更新 packages/..."
-cp native-host/dist/Network-Analyzer-Host-macOS-*.pkg packages/Network-Analyzer-Host-macOS.pkg 2>/dev/null || true
+cp native-host/dist/Network-Analyzer-Host-macOS-universal.pkg packages/Network-Analyzer-Host-macOS.pkg 2>/dev/null || true
 cp native-host/dist/network-analyzer-host-macos.zip packages/ 2>/dev/null || true
 cp native-host/dist/network-analyzer-host-windows.zip packages/ 2>/dev/null || true
 cp native-host/dist/Network-Analyzer-Host-Windows-Setup.exe packages/ 2>/dev/null || true
@@ -87,7 +87,7 @@ echo ""
 echo "Release 文件:"
 ls -lh "$RELEASE_DIR"/network-analyzer-extension.zip
 ls -lh "$RELEASE_DIR"/network-analyzer-host-*.zip 2>/dev/null || true
-ls -lh "$RELEASE_DIR"/Network-Analyzer-Host-macOS-*.pkg 2>/dev/null || true
+ls -lh "$RELEASE_DIR"/Network-Analyzer-Host-macOS-universal.pkg 2>/dev/null || true
 
 if [ "$DRY_RUN" = "--dry" ]; then
   echo ""
@@ -141,7 +141,7 @@ if command -v gh &>/dev/null; then
 | 文件 | 说明 |
 |------|------|
 | \`network-analyzer-extension.zip\` | 浏览器扩展（上传商店或开发者模式加载） |
-| \`Network-Analyzer-Host-macOS-*.pkg\` | macOS Native Host 安装包 |
+| \`Network-Analyzer-Host-macOS-universal.pkg\` | macOS Native Host 安装包（Intel + Apple Silicon 通用） |
 | \`Network-Analyzer-Host-Windows-Setup.exe\` | Windows Native Host 安装包 |
 | \`network-analyzer-host-macos.zip\` | macOS（zip 格式备选） |
 | \`network-analyzer-host-windows.zip\` | Windows（zip 格式备选） |
@@ -152,7 +152,7 @@ if command -v gh &>/dev/null; then
   # 因此 .pkg / .exe 必须作为 Release 资产上传，否则用户按引导下载会 404。
   ASSETS=("$RELEASE_DIR/network-analyzer-extension.zip")
   for f in \
-    "$RELEASE_DIR"/Network-Analyzer-Host-macOS-*.pkg \
+    "$RELEASE_DIR"/Network-Analyzer-Host-macOS-universal.pkg \
     "$RELEASE_DIR"/Network-Analyzer-Host-Windows-Setup.exe \
     "$RELEASE_DIR"/network-analyzer-host-macos.zip \
     "$RELEASE_DIR"/network-analyzer-host-windows.zip; do
@@ -174,7 +174,7 @@ else
   echo "   2. Tag: $VERSION"
   echo "   3. 上传以下文件："
   ls "$RELEASE_DIR"/network-analyzer-extension.zip
-  ls "$RELEASE_DIR"/Network-Analyzer-Host-macOS-*.pkg 2>/dev/null || true
+  ls "$RELEASE_DIR"/Network-Analyzer-Host-macOS-universal.pkg 2>/dev/null || true
   ls "$RELEASE_DIR"/network-analyzer-host-macos.zip 2>/dev/null || true
   ls "$RELEASE_DIR"/network-analyzer-host-windows.zip 2>/dev/null || true
 fi
