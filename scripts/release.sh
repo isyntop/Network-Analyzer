@@ -104,7 +104,7 @@ echo "📦 步骤 5/5: 创建 Git tag 并推送..."
 # 提交版本号变更
 git add manifest.json package.json
 if ! git diff --cached --quiet; then
-  git commit -m "chore: bump version to $SEMVER"
+  git commit -m "chore: 升级版本号至 $SEMVER"
   echo "  ✅ 已提交版本号变更"
 fi
 
@@ -112,7 +112,7 @@ fi
 if git rev-parse "$VERSION" >/dev/null 2>&1; then
   echo "⚠️  Tag $VERSION 已存在，跳过创建"
 else
-  git tag -a "$VERSION" -m "Release $VERSION"
+  git tag -a "$VERSION" -m "发布 $VERSION"
   echo "  ✅ 已创建 tag: $VERSION"
 fi
 
