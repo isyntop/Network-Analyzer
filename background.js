@@ -507,8 +507,10 @@ export function messageHandler(message, sender, sendResponse) {
         // 存储诊断结果
         if (result.data && message.target) {
           // 尝试从 tabId 存储（如果消息中包含 tabId）
+          // 以 domain 作为存储键，确保导出报告时能按域名匹配（target 可能是 IP）
           if (message.tabId) {
-            storeDiagnosticResult(message.tabId, message.target, 'pingResult', result.data);
+            const storeKey = message.domain || message.target;
+            storeDiagnosticResult(message.tabId, storeKey, 'pingResult', result.data);
           }
         }
         sendResponse(result);
@@ -519,7 +521,9 @@ export function messageHandler(message, sender, sendResponse) {
     case 'RUN_MTR': {
       handleMtr(message.target, message.protocol).then((result) => {
         if (result.data && message.target && message.tabId) {
-          storeDiagnosticResult(message.tabId, message.target, 'mtrResult', result.data);
+          // 以 domain 作为存储键，确保导出报告时能按域名匹配（target 可能是 IP）
+          const storeKey = message.domain || message.target;
+          storeDiagnosticResult(message.tabId, storeKey, 'mtrResult', result.data);
         }
         sendResponse(result);
       });

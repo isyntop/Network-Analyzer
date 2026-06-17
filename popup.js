@@ -229,6 +229,7 @@ async function autoRunPing(domain, target) {
     var response = await sendMessage({
       type: 'RUN_PING',
       target: target,
+      domain: domain,
       tabId: currentTabId,
       count: 10
     });
@@ -259,6 +260,7 @@ async function autoRunMtr(domain, target) {
     var response = await sendMessage({
       type: 'RUN_MTR',
       target: target,
+      domain: domain,
       tabId: currentTabId
     });
 
@@ -516,6 +518,7 @@ async function handlePingClick(domain, target, btn) {
     var response = await sendMessage({
       type: 'RUN_PING',
       target: target,
+      domain: domain,
       tabId: currentTabId,
       count: 10
     });
@@ -601,6 +604,7 @@ async function handleMtrClick(domain, target, btn) {
     var response = await sendMessage({
       type: 'RUN_MTR',
       target: target,
+      domain: domain,
       tabId: currentTabId
     });
 
