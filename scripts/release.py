@@ -28,7 +28,7 @@ VERSION_RE = re.compile(r"v?((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-
 def run(*args, cwd=ROOT, capture=False):
     result = subprocess.run(args, cwd=cwd, check=True, text=True,
                             stdout=subprocess.PIPE if capture else None)
-    return result.stdout.strip() if capture else None
+    return result.stdout.rstrip("\n") if capture else None
 
 
 def version_number(value):
