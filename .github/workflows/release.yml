@@ -1,0 +1,123 @@
+name: 构建与发布
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: native-host/go.mod
+          cache-dependency-path: native-host/go.sum
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 确认版本与标签
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python3 -c 'import json; print(json.load(open("package.json"))["version"])')"
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "v$version" ]]; then
+            echo "标签与源码版本不一致" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: 构建并验证所有产物
+        run: |
+          npm ci
+          python3 scripts/release.py build "v${{ steps.version.outputs.version }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-bundle
+          path: dist/v${{ steps.version.outputs.version }}/*
+          if-no-files-found: error
+
+  windows-smoke:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-bundle
+          path: dist
+      - name: 安装、协议和卸载验证
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installer = (Resolve-Path 'dist/Network-Analyzer-Host-Windows-Setup.exe').Path
+          & $installer --silent
+          if ($LASTEXITCODE -ne 0) { throw 'Windows 安装失败' }
+          $binary = Join-Path $env:LOCALAPPDATA 'Network-Analyzer/network_analyzer.exe'
+          if (-not (Test-Path $binary)) { throw '安装后缺少诊断程序' }
+          $key = 'HKCU:\Software\Google\Chrome\NativeMessagingHosts\com.network.analyzer'
+          if (-not (Test-Path $key)) { throw 'Chrome 注册表项缺失' }
+          python scripts/smoke_native.py $binary '${{ needs.build.outputs.version }}'
+          $uninstaller = Join-Path $env:LOCALAPPDATA 'Network-Analyzer/uninstall.exe'
+          & $uninstaller --uninstall --silent
+          if ($LASTEXITCODE -ne 0) { throw 'Windows 卸载失败' }
+          if (Test-Path $key) { throw '卸载后 Chrome 注册表项仍存在' }
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, windows-smoke]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-bundle
+          path: dist
+      - name: 核对并发布
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum -c SHA256SUMS
+          assets=(
+            network-analyzer-extension.zip
+            Network-Analyzer-Host-macOS-universal.pkg
+            Network-Analyzer-Host-Windows-Setup.exe
+            network-analyzer-host-macos.zip
+            network-analyzer-host-windows.zip
+            SHA256SUMS
+          )
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "${assets[@]}" \
+              --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "${assets[@]}" \
+              --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --title "Network Analyzer $GITHUB_REF_NAME" --generate-notes
+          fi
+          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --json assets --jq '.assets[].name' | sort > actual-assets.txt
+          printf '%s\n' \
+            network-analyzer-extension.zip \
+            Network-Analyzer-Host-macOS-universal.pkg \
+            Network-Analyzer-Host-Windows-Setup.exe \
+            network-analyzer-host-macos.zip \
+            network-analyzer-host-windows.zip \
+            SHA256SUMS | sort > expected-assets.txt
+          diff -u expected-assets.txt actual-assets.txt

@@ -86,19 +86,17 @@ Network-Analyzer/
 ├── popup.html/js/css      # 弹出页面 UI
 ├── setup.html/js          # Native Host 安装引导页
 ├── icons/                 # 扩展图标
-├── packages/              # 预编译的 Native Host 安装包（gitignore，仅本地构建用）
-│   ├── Network-Analyzer-Host-macOS.pkg
-│   ├── network-analyzer-host-macos.zip
-│   └── network-analyzer-host-windows.zip
+├── dist/v版本号/          # 每个版本的独立发布产物（gitignore）
 ├── native-host/           # Native Host 源码（Go）
 │   ├── main.go            # 主程序：ping、traceroute、卸载
 │   ├── go.mod
-│   ├── build.sh           # 构建脚本（编译 + 打包）
+│   ├── build.sh           # 构建 macOS/Windows 本地组件
 │   ├── install-macos.sh   # macOS 手动安装脚本
 │   └── packaging/         # .pkg / .bat 打包配置
 ├── scripts/
 │   ├── pack-extension.sh  # 扩展打包脚本（生成商店 .zip）
-│   ├── release.sh         # 发布脚本（构建 + tag + GitHub Release）
+│   ├── release.sh         # 发布入口（调用 release.py）
+│   ├── release.py         # 版本、产物校验和发布步骤
 │   └── generate-icons.js  # 图标生成脚本
 ├── tests/                 # 测试文件
 │   ├── chrome-mock.js     # Chrome API Mock
@@ -115,8 +113,9 @@ Network-Analyzer/
 ### 环境要求
 
 - Node.js 18+
-- Go 1.21+（编译 Native Host）
-- GitHub CLI (`gh`)（发布 Release 用）
+- Go 1.25+（编译 Native Host）
+- macOS 构建机需有 `lipo`、`pkgbuild`、`zip`
+- Git 和 GitHub Actions（推送标签后自动发布 Release）
 
 ### 安装依赖
 
@@ -130,84 +129,40 @@ npm install
 npm test
 ```
 
-### 从零构建完整发布包
+### 发布流程
 
-以下是从干净仓库到生成所有可发布产物的完整步骤：
+版本号以 `package.json` 为准。发布脚本把它同步到扩展清单和锁文件，并在编译时注入本地诊断程序及 macOS pkg。每次发布使用独立目录，避免旧安装包混入新版本。
 
 ```bash
-# 1. 编译 Native Host（macOS/Windows 二进制 + 所有安装包）
-cd native-host
-./build.sh --pkg
-cd ..
+npm ci
 
-# 2. 打包浏览器扩展（生成商店上传用 .zip）
-./scripts/pack-extension.sh
+# 可选：在临时副本完整预演，不修改当前工作区
+./scripts/release.sh preview v1.0.10
+
+# 准备版本文件、运行测试并构建全部产物；产物留在 dist/v1.0.10/
+./scripts/release.sh prepare v1.0.10
+
+# 检查产物未被替换，且版本、架构和安装包内容正确
+./scripts/release.sh verify v1.0.10
+
+# 审阅版本文件变更后，在 main 上提交版本、推送单个标签
+./scripts/release.sh publish v1.0.10
 ```
 
-执行完毕后，所有产物在项目根 `dist/` 目录：
+推送标签后，[GitHub Actions](.github/workflows/release.yml) 会重新构建，执行 macOS 原生消息验证和 Windows 安装/卸载验证，再创建 GitHub Release 并核对上传资产。`main` 分支提交也会运行同样的构建验证，但不会发布。发布失败时查看该标签对应的 Actions 运行记录；不要复用已经发布的标签。
+
+`dist/v版本号/` 包含以下文件：
 
 | 文件 | 用途 |
 |------|------|
-| `network-analyzer-extension.zip` | **上传 Chrome Web Store / Edge Add-ons** |
-| `Network-Analyzer-Host-macOS-arm64.pkg` | macOS Native Host 安装包 |
-| `Network-Analyzer-Host-Windows-Setup.exe` | Windows Native Host 安装包 |
-| `network-analyzer-host-macos.zip` | macOS zip 备选 |
-| `network-analyzer-host-windows.zip` | Windows zip 备选 |
+| `network-analyzer-extension.zip` | 上传 Chrome Web Store / Edge Add-ons；仅包含扩展文件 |
+| `Network-Analyzer-Host-macOS-universal.pkg` | macOS Intel / Apple Silicon 安装包 |
+| `Network-Analyzer-Host-Windows-Setup.exe` | Windows 安装包 |
+| `network-analyzer-host-macos.zip` | macOS 手动安装备选 |
+| `network-analyzer-host-windows.zip` | Windows 手动安装备选 |
+| `SHA256SUMS` | 上述五个产物的 SHA-256 校验和 |
 
-> `build.sh` 会自动将产物同步到 `dist/` 和 `packages/`，`pack-extension.sh` 会将 `packages/` 中的安装包打入扩展 zip，用户安装扩展后可直接从插件内下载对应平台的安装包。
-
-### 一键发布（推荐）
-
-```bash
-./scripts/release.sh v1.0.3
-```
-
-此命令会自动完成以下所有步骤：
-
-1. 将版本号 `1.0.3` 写入 `manifest.json` 和 `package.json`
-2. 编译 Native Host + 生成 macOS .pkg + Windows zip 安装包
-3. 将安装包同步到 `packages/` 目录
-4. 打包扩展 .zip（内含安装包）
-5. 提交版本号变更、创建 git tag、推送到 GitHub
-6. 创建 GitHub Release 并上传所有产物
-
-发布后去 [Chrome Web Store 开发者后台](https://chrome.google.com/webstore/devconsole) 上传 `dist/network-analyzer-extension.zip` 即可。
-
-如果只想构建不推送：
-
-```bash
-./scripts/release.sh v1.0.3 --dry
-```
-
-### 手动分步操作
-
-如果不想用一键发布脚本，也可以分步执行：
-
-```bash
-# 编译 Native Host（不含 .pkg）
-cd native-host
-./build.sh
-cd ..
-
-# 编译 Native Host（含 macOS .pkg）
-cd native-host
-./build.sh --pkg
-cd ..
-
-# 仅打包扩展（前提：packages/ 中已有安装包）
-./scripts/pack-extension.sh
-
-# 打包扩展 + 生成企业分发用 .crx
-./scripts/pack-extension.sh --crx
-```
-
-### 上传商店注意事项
-
-- 商店要求每次上传的 `manifest.json` 中 version 必须高于已发布版本
-- `release.sh` 会自动处理版本号递增，手动操作时需自行修改 `manifest.json` 中的 `version` 字段
-- 上传文件为 `dist/network-analyzer-extension.zip`（约 36KB，仅包含扩展代码）
-- 同一个 zip 可同时用于 Chrome Web Store 和 Edge Add-ons
-- Native Host 安装包不打包进扩展，插件会引导用户从 GitHub Releases 下载
+GitHub Release 完成后，从该目录上传扩展 zip 到 [Chrome Web Store 开发者后台](https://chrome.google.com/webstore/devconsole) 和 Edge Add-ons。商店上传由开发者手动完成；扩展内的安装引导从最新 GitHub Release 下载 pkg/exe。macOS pkg 当前未签名，正式分发前需另行配置签名与公证。
 
 ## 浏览器兼容性
 

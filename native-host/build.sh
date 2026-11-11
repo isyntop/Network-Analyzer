@@ -1,143 +1,57 @@
 #!/bin/bash
-# Network Analyzer Native Host - 完整构建脚本
-# 用法: ./build.sh [--pkg]
-#   --pkg  同时构建 macOS .pkg 安装包
+# 构建所有正式发布的本地诊断组件，产物只写入指定目录。
+# 用法: ./native-host/build.sh <版本号> <输出目录>
+set -euo pipefail
 
-set -e
+VERSION="${1:?缺少版本号}"
+OUTPUT_DIR="${2:?缺少输出目录}"
+HOST_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-cd "$(dirname "$0")"
-NATIVE_HOST_DIR="$(pwd)"
-DIST_DIR="$NATIVE_HOST_DIR/dist"
+for tool in go zip lipo pkgbuild; do
+  command -v "$tool" >/dev/null || { echo "缺少构建工具: $tool" >&2; exit 1; }
+done
 
-echo "🔨 构建 Network Analyzer Native Host..."
-echo ""
+mkdir -p "$OUTPUT_DIR"
+OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
+WORK_DIR="$(mktemp -d)"
+trap 'rm -rf "$WORK_DIR"' EXIT
 
-# ─── 编译 Go 二进制 ─────────────────────────────────────────
+echo "编译本地诊断组件 $VERSION"
+cd "$HOST_DIR"
+for arch in amd64 arm64; do
+  GOOS=darwin GOARCH="$arch" go build \
+    -ldflags="-s -w -X main.VERSION=$VERSION" \
+    -o "$WORK_DIR/darwin-$arch/network_analyzer" .
+done
+GOOS=windows GOARCH=amd64 go build \
+  -ldflags="-s -w -X main.VERSION=$VERSION" \
+  -o "$WORK_DIR/network_analyzer.exe" .
 
-echo "📦 编译 Go 二进制..."
+lipo -create "$WORK_DIR/darwin-amd64/network_analyzer" \
+  "$WORK_DIR/darwin-arm64/network_analyzer" \
+  -output "$WORK_DIR/network_analyzer"
 
-echo "  → macOS amd64..."
-GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/darwin-amd64/network_analyzer .
+# 在临时目录编译安装器，避免在源码树留下嵌入载荷。
+cp -R "$HOST_DIR/installer" "$WORK_DIR/installer"
+mkdir -p "$WORK_DIR/installer/payload"
+cp "$WORK_DIR/network_analyzer.exe" "$WORK_DIR/installer/payload/network_analyzer.exe"
+(cd "$WORK_DIR/installer" && GOOS=windows GOARCH=amd64 go build \
+  -ldflags="-s -w" \
+  -o "$OUTPUT_DIR/Network-Analyzer-Host-Windows-Setup.exe" .)
 
-echo "  → macOS arm64..."
-GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o dist/darwin-arm64/network_analyzer .
+mkdir -p "$WORK_DIR/mac-zip" "$WORK_DIR/win-zip"
+cp "$WORK_DIR/network_analyzer" "$WORK_DIR/mac-zip/network_analyzer"
+cp "$HOST_DIR/install-macos.sh" "$WORK_DIR/mac-zip/"
+cp "$HOST_DIR/packaging/macos/uninstall.sh" "$WORK_DIR/mac-zip/uninstall.sh"
+chmod +x "$WORK_DIR/mac-zip/"*
+(cd "$WORK_DIR/mac-zip" && zip -q "$OUTPUT_DIR/network-analyzer-host-macos.zip" ./*)
 
-echo "  → Windows amd64..."
-GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/windows-amd64/network_analyzer.exe .
+cp "$WORK_DIR/network_analyzer.exe" "$WORK_DIR/win-zip/"
+cp "$HOST_DIR/packaging/windows/install.bat" "$WORK_DIR/win-zip/"
+cp "$HOST_DIR/packaging/windows/uninstall.bat" "$WORK_DIR/win-zip/"
+(cd "$WORK_DIR/win-zip" && zip -q "$OUTPUT_DIR/network-analyzer-host-windows.zip" ./*)
 
-echo "  ✅ 编译完成"
-echo ""
+bash "$HOST_DIR/packaging/macos/build-pkg.sh" \
+  "$VERSION" "$WORK_DIR/network_analyzer" "$OUTPUT_DIR"
 
-# ─── 打包 Windows 安装包（zip）──────────────────────────────
-
-echo "📦 打包 Windows 安装包..."
-
-WIN_PKG_DIR=$(mktemp -d)
-cp dist/windows-amd64/network_analyzer.exe "$WIN_PKG_DIR/"
-cp packaging/windows/install.bat "$WIN_PKG_DIR/"
-cp packaging/windows/uninstall.bat "$WIN_PKG_DIR/"
-
-# 创建 zip
-(cd "$WIN_PKG_DIR" && zip -q ../network-analyzer-host-windows.zip *)
-mv "$(dirname "$WIN_PKG_DIR")/network-analyzer-host-windows.zip" dist/
-rm -rf "$WIN_PKG_DIR"
-
-echo "  ✅ dist/network-analyzer-host-windows.zip"
-echo ""
-
-# ─── 构建 Windows .exe 安装包 ───────────────────────────────
-
-echo "📦 构建 Windows .exe 安装包..."
-
-# 将 native host 二进制嵌入 installer
-INSTALLER_DIR="$NATIVE_HOST_DIR/installer"
-PAYLOAD_DIR="$INSTALLER_DIR/payload"
-mkdir -p "$PAYLOAD_DIR"
-cp dist/windows-amd64/network_analyzer.exe "$PAYLOAD_DIR/"
-
-# 编译 installer（交叉编译为 Windows exe）
-(cd "$INSTALLER_DIR" && GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o "$DIST_DIR/Network-Analyzer-Host-Windows-Setup.exe" .)
-
-# 清理 payload
-rm -rf "$PAYLOAD_DIR"
-
-echo "  ✅ dist/Network-Analyzer-Host-Windows-Setup.exe"
-echo ""
-
-# ─── 构建 macOS .pkg（如果指定 --pkg）──────────────────────
-
-if [ "$1" = "--pkg" ]; then
-  echo "📦 构建 macOS .pkg 安装包..."
-  chmod +x packaging/macos/build-pkg.sh
-  chmod +x packaging/macos/postinstall
-  chmod +x packaging/macos/uninstall.sh
-  bash packaging/macos/build-pkg.sh
-  echo ""
-fi
-
-# 打包 macOS 安装包（zip，给没有 pkgbuild 的环境用）
-# 使用通用二进制（universal），同时兼容 Intel 与 Apple Silicon
-echo "📦 打包 macOS 安装包..."
-
-UNIVERSAL_BIN="dist/darwin-universal/network_analyzer"
-if command -v lipo >/dev/null 2>&1; then
-  mkdir -p "$(dirname "$UNIVERSAL_BIN")"
-  lipo -create dist/darwin-arm64/network_analyzer dist/darwin-amd64/network_analyzer -output "$UNIVERSAL_BIN"
-  MAC_BINARY="$UNIVERSAL_BIN"
-else
-  ARCH=$(uname -m)
-  if [ "$ARCH" = "arm64" ]; then
-    MAC_BINARY="dist/darwin-arm64/network_analyzer"
-  else
-    MAC_BINARY="dist/darwin-amd64/network_analyzer"
-  fi
-fi
-
-MAC_PKG_DIR=$(mktemp -d)
-cp "$MAC_BINARY" "$MAC_PKG_DIR/network_analyzer"
-cp install-macos.sh "$MAC_PKG_DIR/"
-cp packaging/macos/uninstall.sh "$MAC_PKG_DIR/"
-chmod +x "$MAC_PKG_DIR/network_analyzer"
-chmod +x "$MAC_PKG_DIR/install-macos.sh"
-chmod +x "$MAC_PKG_DIR/uninstall.sh"
-
-(cd "$MAC_PKG_DIR" && zip -q ../network-analyzer-host-macos.zip *)
-mv "$(dirname "$MAC_PKG_DIR")/network-analyzer-host-macos.zip" dist/
-rm -rf "$MAC_PKG_DIR"
-
-echo "  ✅ dist/network-analyzer-host-macos.zip"
-echo ""
-
-# ─── 汇总 ───────────────────────────────────────────────────
-
-echo "============================================"
-echo "  构建产物汇总"
-echo "============================================"
-echo ""
-ls -lh dist/*.zip dist/*.pkg dist/*.exe 2>/dev/null || true
-echo ""
-
-# ─── 同步到项目根 dist/ 和 packages/ ────────────────────────
-
-PROJECT_ROOT="$(cd "$NATIVE_HOST_DIR/.." && pwd)"
-PROJECT_DIST="$PROJECT_ROOT/dist"
-PACKAGES_DIR="$PROJECT_ROOT/packages"
-
-mkdir -p "$PROJECT_DIST" "$PACKAGES_DIR"
-
-cp dist/Network-Analyzer-Host-macOS-universal.pkg "$PROJECT_DIST/" 2>/dev/null || true
-cp dist/network-analyzer-host-macos.zip "$PROJECT_DIST/" 2>/dev/null || true
-cp dist/network-analyzer-host-windows.zip "$PROJECT_DIST/" 2>/dev/null || true
-cp dist/Network-Analyzer-Host-Windows-Setup.exe "$PROJECT_DIST/" 2>/dev/null || true
-
-cp dist/Network-Analyzer-Host-macOS-universal.pkg "$PACKAGES_DIR/Network-Analyzer-Host-macOS.pkg" 2>/dev/null || true
-cp dist/network-analyzer-host-macos.zip "$PACKAGES_DIR/" 2>/dev/null || true
-cp dist/network-analyzer-host-windows.zip "$PACKAGES_DIR/" 2>/dev/null || true
-cp dist/Network-Analyzer-Host-Windows-Setup.exe "$PACKAGES_DIR/" 2>/dev/null || true
-
-echo "✅ 已同步到项目根 dist/ 和 packages/"
-echo ""
-echo "macOS 用户: 双击 .pkg 安装（推荐）"
-echo "Windows 用户: 双击 .exe 安装（推荐）或解压 .zip 运行 install.bat"
-echo "卸载: macOS 运行 /usr/local/lib/network-analyzer/uninstall.sh"
-echo "      Windows 运行 %LOCALAPPDATA%\\Network-Analyzer\\uninstall.exe --uninstall"
+echo "本地诊断组件已生成: $OUTPUT_DIR"

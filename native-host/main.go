@@ -69,7 +69,8 @@ type HopInfo struct {
 	IsTimeout bool    `json:"isTimeout"`
 }
 
-const VERSION = "1.1.0"
+// VERSION 由发布构建注入，开发构建使用 dev。
+var VERSION = "dev"
 
 // ─── Native Messaging I/O ───────────────────────────────────
 

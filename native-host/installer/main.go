@@ -20,9 +20,10 @@ const (
 )
 
 func main() {
-	// Check for uninstall flag
+	silent := len(os.Args) > 1 && os.Args[len(os.Args)-1] == "--silent"
+	// 按参数选择安装或卸载。
 	if len(os.Args) > 1 && os.Args[1] == "--uninstall" {
-		uninstall()
+		uninstall(silent)
 		return
 	}
 
@@ -62,19 +63,26 @@ func main() {
 	}
 	fmt.Println("[OK] Created manifest")
 
-	regAdd("Software\\Google\\Chrome\\NativeMessagingHosts\\"+hostName, manifestPath)
+	if err := regAdd("Software\\Google\\Chrome\\NativeMessagingHosts\\"+hostName, manifestPath); err != nil {
+		fail("Failed to register Chrome: " + err.Error())
+	}
 	fmt.Println("[OK] Registered to Chrome")
 
-	regAdd("Software\\Microsoft\\Edge\\NativeMessagingHosts\\"+hostName, manifestPath)
+	if err := regAdd("Software\\Microsoft\\Edge\\NativeMessagingHosts\\"+hostName, manifestPath); err != nil {
+		fail("Failed to register Edge: " + err.Error())
+	}
 	fmt.Println("[OK] Registered to Edge")
 
-	// Copy self as uninstaller
+	// 将安装器复制为卸载程序。
 	selfPath, _ := os.Executable()
 	uninstallerPath := filepath.Join(installDir, "uninstall.exe")
 	if selfPath != "" && selfPath != uninstallerPath {
 		selfData, err := os.ReadFile(selfPath)
-		if err == nil {
-			os.WriteFile(uninstallerPath, selfData, 0755)
+		if err != nil {
+			fail("Failed to read installer: " + err.Error())
+		}
+		if err := os.WriteFile(uninstallerPath, selfData, 0755); err != nil {
+			fail("Failed to create uninstaller: " + err.Error())
 		}
 	}
 
@@ -84,11 +92,13 @@ func main() {
 	fmt.Printf("  Uninstall: %s --uninstall\n", uninstallerPath)
 	fmt.Println("============================================")
 	fmt.Println()
-	fmt.Print("Press Enter to exit...")
-	fmt.Scanln()
+	if !silent {
+		fmt.Print("Press Enter to exit...")
+		fmt.Scanln()
+	}
 }
 
-func uninstall() {
+func uninstall(silent bool) {
 	fmt.Println("============================================")
 	fmt.Println("  Network Analyzer - Uninstall")
 	fmt.Println("============================================")
@@ -96,10 +106,14 @@ func uninstall() {
 
 	installDir := getInstallDir()
 
-	regDelete("Software\\Google\\Chrome\\NativeMessagingHosts\\" + hostName)
+	if err := regDelete("Software\\Google\\Chrome\\NativeMessagingHosts\\" + hostName); err != nil {
+		fail("Failed to remove Chrome registration: " + err.Error())
+	}
 	fmt.Println("[OK] Removed Chrome registration")
 
-	regDelete("Software\\Microsoft\\Edge\\NativeMessagingHosts\\" + hostName)
+	if err := regDelete("Software\\Microsoft\\Edge\\NativeMessagingHosts\\" + hostName); err != nil {
+		fail("Failed to remove Edge registration: " + err.Error())
+	}
 	fmt.Println("[OK] Removed Edge registration")
 
 	os.Remove(filepath.Join(installDir, "network_analyzer.exe"))
@@ -111,8 +125,10 @@ func uninstall() {
 	fmt.Println("  Uninstall complete! Please restart browser.")
 	fmt.Println("============================================")
 	fmt.Println()
-	fmt.Print("Press Enter to exit...")
-	fmt.Scanln()
+	if !silent {
+		fmt.Print("Press Enter to exit...")
+		fmt.Scanln()
+	}
 
 	selfPath, _ := os.Executable()
 	if selfPath != "" {
@@ -131,17 +147,19 @@ func getInstallDir() string {
 	return filepath.Join(localAppData, "Network-Analyzer")
 }
 
-func regAdd(key, value string) {
-	exec.Command("reg", "add", "HKCU\\"+key, "/ve", "/t", "REG_SZ", "/d", value, "/f").Run()
+func regAdd(key, value string) error {
+	return exec.Command("reg", "add", "HKCU\\"+key, "/ve", "/t", "REG_SZ", "/d", value, "/f").Run()
 }
 
-func regDelete(key string) {
-	exec.Command("reg", "delete", "HKCU\\"+key, "/f").Run()
+func regDelete(key string) error {
+	return exec.Command("reg", "delete", "HKCU\\"+key, "/f").Run()
 }
 
 func fail(msg string) {
 	fmt.Printf("[ERROR] %s\n", msg)
-	fmt.Print("Press Enter to exit...")
-	fmt.Scanln()
+	if len(os.Args) < 2 || os.Args[len(os.Args)-1] != "--silent" {
+		fmt.Print("Press Enter to exit...")
+		fmt.Scanln()
+	}
 	os.Exit(1)
 }

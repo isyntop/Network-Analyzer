@@ -14,7 +14,11 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-DIST_DIR="$PROJECT_DIR/dist"
+if [ "${1:-}" = "--crx" ]; then
+  DIST_DIR="$PROJECT_DIR/dist"
+else
+  DIST_DIR="${1:-$PROJECT_DIR/dist}"
+fi
 
 mkdir -p "$DIST_DIR"
 
@@ -93,7 +97,7 @@ echo "  ✅ $ZIP_FILE ($(du -h "$ZIP_FILE" | cut -f1))"
 
 # ─── 2. 生成企业分发用 .crx（可选）──────────────────────────
 
-if [ "$1" = "--crx" ]; then
+if [ "${1:-}" = "--crx" ] || [ "${2:-}" = "--crx" ]; then
   echo ""
   echo "📦 打包扩展 .crx（企业分发用）..."
 
@@ -120,7 +124,7 @@ if [ "$1" = "--crx" ]; then
     # 生成私钥（如果不存在）
     if [ ! -f "$PEM_FILE" ]; then
       openssl genrsa -out "$PEM_FILE" 2048 2>/dev/null
-      echo "  🔑 已生成签名私钥: $PEM_FILE（请妥善保管！）"
+      echo "  🔑 已生成签名私钥: ${PEM_FILE}（请妥善保管！）"
     fi
 
     # 创建临时目录放扩展文件
@@ -141,26 +145,26 @@ if [ "$1" = "--crx" ]; then
     openssl rsa -pubout -outform DER -in "$PEM_FILE" -out "$TMP_DIR/pub" 2>/dev/null
 
     # 构建 CRX3 格式
-    # CRX3 header: magic(4) + version(4) + header_length(4) + header_proto
+    # CRX3 文件头包含魔数、版本号、头长度和协议头。
     # 简化版：使用 CRX2 格式（更简单，Chrome 仍然支持）
     PUB_LEN=$(wc -c < "$TMP_DIR/pub" | tr -d ' ')
     SIG_LEN=$(wc -c < "$TMP_DIR/sig" | tr -d ' ')
     ZIP_CONTENT=$(cat "$TMP_ZIP")
 
     {
-      # CRX2 magic number
+      # CRX2 魔数
       printf 'Cr24'
-      # Version 2
+      # 版本号 2
       printf '\x02\x00\x00\x00'
-      # Public key length (little-endian uint32)
+      # 公钥长度，使用小端序无符号整数。
       printf "$(printf '%08x' "$PUB_LEN" | sed 's/\(..\)\(..\)\(..\)\(..\)/\\x\4\\x\3\\x\2\\x\1/')"
-      # Signature length (little-endian uint32)
+      # 签名长度，使用小端序无符号整数。
       printf "$(printf '%08x' "$SIG_LEN" | sed 's/\(..\)\(..\)\(..\)\(..\)/\\x\4\\x\3\\x\2\\x\1/')"
-      # Public key
+      # 公钥
       cat "$TMP_DIR/pub"
-      # Signature
+      # 签名
       cat "$TMP_DIR/sig"
-      # ZIP content
+      # ZIP 内容
       cat "$TMP_ZIP"
     } > "$CRX_FILE"
 
@@ -196,7 +200,7 @@ if [ "$1" = "--crx" ]; then
     fi
     if [ -f "$CHROME_PEM" ] && [ ! -f "$PEM_FILE" ]; then
       mv "$CHROME_PEM" "$PEM_FILE"
-      echo "  🔑 已生成签名私钥: $PEM_FILE（请妥善保管！）"
+      echo "  🔑 已生成签名私钥: ${PEM_FILE}（请妥善保管！）"
     fi
 
     rm -rf "$TMP_EXT"
@@ -212,10 +216,10 @@ echo "============================================"
 echo ""
 ls -lh "$DIST_DIR"/network-analyzer-extension.zip "$DIST_DIR"/network-analyzer.crx 2>/dev/null || true
 echo ""
-echo "📤 Chrome Web Store 上传: dist/network-analyzer-extension.zip"
+echo "📤 Chrome Web Store 上传: $ZIP_FILE"
 echo "   → https://chrome.google.com/webstore/devconsole"
 echo ""
-echo "📤 Edge Add-ons 上传: dist/network-analyzer-extension.zip（同一个文件）"
+echo "📤 Edge Add-ons 上传: ${ZIP_FILE}（同一个文件）"
 echo "   → https://partner.microsoft.com/dashboard/microsoftedge"
 echo ""
 if [ -f "$DIST_DIR/network-analyzer.crx" ]; then
