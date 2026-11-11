@@ -23,6 +23,11 @@ def main():
     data = json.loads(response[4:])
     if not data.get("success") or data.get("version") != version:
         raise ValueError(f"诊断组件响应错误: {data}")
+    if len(sys.argv) > 3:
+        manifest_path = binary.parent / "com.network.analyzer.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if sys.argv[3] not in manifest.get("allowed_origins", []):
+            raise ValueError("本地组件未授权 Edge 商店扩展 ID")
     print(f"诊断组件协议验证通过: {version}")
 
 

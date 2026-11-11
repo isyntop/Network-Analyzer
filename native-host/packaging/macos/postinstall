@@ -22,7 +22,7 @@ fi
 
 USER_HOME=$(eval echo "~$CURRENT_USER")
 
-# Native Messaging Host manifest 内容（允许所有扩展）
+# Native Messaging Host 清单仅允许项目扩展。
 generate_manifest() {
   cat << MANIFEST
 {
@@ -32,7 +32,8 @@ generate_manifest() {
   "type": "stdio",
   "allowed_origins": [
     "chrome-extension://kpfbbomehbepffmhnbjmooahcfedpndg/",
-    "chrome-extension://daenfnkblgiedkbkjnheiebnfhhmbbdo/"
+    "chrome-extension://daenfnkblgiedkbkjnheiebnfhhmbbdo/",
+    "chrome-extension://gohljecmghmeeikijodpgnlffecnpdhi/"
   ]
 }
 MANIFEST

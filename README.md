@@ -164,6 +164,8 @@ npm ci
 
 GitHub Release 完成后，从该目录上传扩展 zip 到 [Chrome Web Store 开发者后台](https://chrome.google.com/webstore/devconsole) 和 Edge Add-ons。商店上传由开发者手动完成；扩展内的安装引导从最新 GitHub Release 下载 pkg/exe。macOS pkg 当前未签名，正式分发前需另行配置签名与公证。
 
+首次上架新的扩展商店时，应先读取商店分配的扩展 ID，并将其加入 macOS、Windows 本地诊断组件生成的 `allowed_origins`，随后重新构建安装包并验证商店安装版可以连接本地组件。当前 Edge 加载项 ID 为 `gohljecmghmeeikijodpgnlffecnpdhi`。
+
 ## 浏览器兼容性
 
 - Chrome 88+

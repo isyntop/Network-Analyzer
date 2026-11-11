@@ -17,6 +17,7 @@ const (
 	hostName         = "com.network.analyzer"
 	extensionID      = "kpfbbomehbepffmhnbjmooahcfedpndg"
 	storeExtensionID = "daenfnkblgiedkbkjnheiebnfhhmbbdo"
+	edgeExtensionID  = "gohljecmghmeeikijodpgnlffecnpdhi"
 )
 
 func main() {
@@ -54,9 +55,10 @@ func main() {
   "type": "stdio",
   "allowed_origins": [
     "chrome-extension://%s/",
+    "chrome-extension://%s/",
     "chrome-extension://%s/"
   ]
-}`, hostName, escapedPath, extensionID, storeExtensionID)
+}`, hostName, escapedPath, extensionID, storeExtensionID, edgeExtensionID)
 
 	if err := os.WriteFile(manifestPath, []byte(manifest), 0644); err != nil {
 		fail("Failed to write manifest: " + err.Error())

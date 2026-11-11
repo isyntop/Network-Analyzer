@@ -70,7 +70,7 @@ jobs:
           if (-not (Test-Path $binary)) { throw '安装后缺少诊断程序' }
           $key = 'HKCU:\Software\Google\Chrome\NativeMessagingHosts\com.network.analyzer'
           if (-not (Test-Path $key)) { throw 'Chrome 注册表项缺失' }
-          python scripts/smoke_native.py $binary '${{ needs.build.outputs.version }}'
+          python scripts/smoke_native.py $binary '${{ needs.build.outputs.version }}' 'chrome-extension://gohljecmghmeeikijodpgnlffecnpdhi/'
           $uninstaller = Join-Path $env:LOCALAPPDATA 'Network-Analyzer/uninstall.exe'
           & $uninstaller --uninstall --silent
           if ($LASTEXITCODE -ne 0) { throw 'Windows 卸载失败' }

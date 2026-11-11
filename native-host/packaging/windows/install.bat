@@ -8,6 +8,7 @@ setlocal enabledelayedexpansion
 set HOST_NAME=com.network.analyzer
 set EXTENSION_ID=kpfbbomehbepffmhnbjmooahcfedpndg
 set STORE_EXTENSION_ID=daenfnkblgiedkbkjnheiebnfhhmbbdo
+set EDGE_EXTENSION_ID=gohljecmghmeeikijodpgnlffecnpdhi
 set INSTALL_DIR=%LOCALAPPDATA%\Network-Analyzer
 set SCRIPT_DIR=%~dp0
 
@@ -38,7 +39,8 @@ echo   "path": "!EXE_PATH_ESCAPED!",
 echo   "type": "stdio",
 echo   "allowed_origins": [
 echo     "chrome-extension://%EXTENSION_ID%/",
-echo     "chrome-extension://%STORE_EXTENSION_ID%/"
+echo     "chrome-extension://%STORE_EXTENSION_ID%/",
+echo     "chrome-extension://%EDGE_EXTENSION_ID%/"
 echo   ]
 echo }
 ) > "%MANIFEST_PATH%"
